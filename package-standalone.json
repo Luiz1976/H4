@@ -1,0 +1,17 @@
+{
+  "name": "humaniq-backend-standalone",
+  "private": true,
+  "version": "0.0.1",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server-standalone.cjs"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "phases": {
+    "setup": {
+      "nixPkgs": ["nodejs_20"]
+    },
+    "install": {
+      "cmds": ["npm ci --omit=dev --no-audit --no-fund || npm install --omit=dev --no-audit --no-fund"]
+    },
+    "build": {
+      "cmds": ["echo 'Skipping build phase for backend'"]
+    }
+  },
+  "start": {
+    "cmd": "node server-standalone.cjs"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "name": "humaniq-api-server",
+  "version": "1.0.0",
+  "description": "API Server para endpoints seguros do Humaniq",
+  "main": "server.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js",
+    "test": "node test-api-server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.58.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^5.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.10.0",
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.4.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.44.7",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^3.3.2",
+    "tsx": "^4.20.6",
+    "uuid": "^9.0.1",
+    "winston": "^3.18.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "keywords": [
+    "api",
+    "supabase",
+    "humaniq",
+    "convites"
+  ],
+  "author": "Agente Bastos",
+  "license": "MIT"
+}

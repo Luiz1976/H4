@@ -1,0 +1,399 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Base colors - Modern neutral palette */
+    --background: 220 15% 97%;
+    --foreground: 220 15% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 15%;
+
+    /* Primary - Deep professional blue */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 98%;
+    --primary-glow: 217 91% 70%;
+
+    /* Secondary - Sophisticated slate */
+    --secondary: 220 13% 91%;
+    --secondary-foreground: 220 15% 25%;
+
+    /* Muted - Subtle grays */
+    --muted: 220 13% 95%;
+    --muted-foreground: 220 9% 46%;
+
+    /* Accent - Refined blue-gray */
+    --accent: 220 13% 91%;
+    --accent-foreground: 220 15% 25%;
+
+    /* Destructive - Professional red */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Border and input */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 217 91% 60%;
+
+    /* Success - Trustworthy green */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 98%;
+
+    /* Avatar selector specific colors */
+    --avatar-modal-bg: 0 0% 100%;
+    --avatar-gradient-start: 217 91% 60%;
+    --avatar-gradient-end: 142 71% 45%;
+    --avatar-hover: 217 91% 95%;
+    --avatar-border: 220 13% 91%;
+  }
+}
+
+/* Animações para Avatar Selector */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalSlideOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+
+@keyframes staggeredFadeIn {
+  0% { 
+    opacity: 0; 
+    transform: translateY(20px) scale(0.9);
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes smoothScale {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+/* Barras de rolagem customizadas para o chatbot - sempre visíveis */
+.scrollbar-visible {
+  scrollbar-width: auto;
+  scrollbar-color: rgba(100, 116, 139, 0.5) rgba(241, 245, 249, 0.3);
+  overflow: auto;
+}
+
+.scrollbar-visible::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.scrollbar-visible::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.8);
+  border-radius: 5px;
+}
+
+.scrollbar-visible::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.5);
+  border-radius: 5px;
+  border: 2px solid rgba(241, 245, 249, 0.8);
+}
+
+.scrollbar-visible::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.7);
+}
+
+.scrollbar-visible::-webkit-scrollbar-corner {
+  background: rgba(241, 245, 249, 0.8);
+}
+
+/* Dark mode scrollbar */
+.dark .scrollbar-visible {
+  scrollbar-color: rgba(148, 163, 184, 0.5) rgba(15, 23, 42, 0.3);
+}
+
+.dark .scrollbar-visible::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.dark .scrollbar-visible::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.5);
+  border: 2px solid rgba(15, 23, 42, 0.8);
+}
+
+.dark .scrollbar-visible::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.7);
+}
+
+.dark .scrollbar-visible::-webkit-scrollbar-corner {
+  background: rgba(15, 23, 42, 0.8);
+}
+
+@keyframes blob {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(20px, -20px) scale(1.1);
+  }
+  50% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  75% {
+    transform: translate(20px, 20px) scale(1.05);
+  }
+}
+
+/* Utilitários para animações */
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Classes de animação */
+.avatar-modal-enter {
+  animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.avatar-modal-exit {
+  animation: modalSlideOut 0.3s ease-in;
+}
+
+.avatar-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.avatar-slide-up {
+  animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.avatar-pulse {
+  animation: pulse 2s infinite;
+}
+
+.avatar-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.avatar-staggered-fade {
+  animation: staggeredFadeIn 0.6s ease-out forwards;
+}
+
+.avatar-smooth-scale {
+  animation: smoothScale 0.3s ease-out;
+}
+
+/* Animações para Drag & Drop */
+.drag-zone-hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.drag-zone-active {
+  transform: scale(1.02);
+  box-shadow: 0 12px 30px rgba(34, 197, 94, 0.2);
+  animation: avatar-pulse 1.5s infinite;
+}
+
+.drag-zone-active .upload-icon {
+  animation: bounce 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-8px); }
+}
+
+/* Estilos para galeria de avatares */
+.avatar-gallery-item {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.avatar-gallery-item:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+.avatar-gallery-item:nth-child(odd) {
+  animation-delay: 0.1s;
+}
+
+.avatar-gallery-item:nth-child(even) {
+  animation-delay: 0.2s;
+    /* Warning - Professional amber */
+    --warning: 43 96% 56%;
+    --warning-foreground: 0 0% 98%;
+
+    /* Modern gradients - Professional and contemporary */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(234 89% 74%));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%), hsl(220 13% 98%));
+    --gradient-hero: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(234 89% 74%) 50%, hsl(262 83% 58%) 100%);
+    
+    /* Elegant shadows */
+    --shadow-elegant: 0 4px 20px -4px hsl(217 91% 60% / 0.15);
+    --shadow-glow: 0 0 30px hsl(217 91% 60% / 0.2);
+    --shadow-card: 0 2px 10px -2px hsl(220 13% 91% / 0.8);
+    
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --radius: 0.75rem;
+
+    /* Sidebar colors */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 15% 25%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 220 13% 95%;
+    --sidebar-accent-foreground: 220 15% 25%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217 91% 60%;
+  }
+
+  /* Transições suaves para botões */
+  .avatar-button {
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .avatar-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .avatar-button:active {
+    transform: translateY(0);
+    transition: all 0.1s ease;
+  }
+
+  .dark {
+    /* Dark mode - Professional and modern */
+    --background: 220 15% 8%;
+    --foreground: 220 15% 95%;
+
+    --card: 220 15% 10%;
+    --card-foreground: 220 15% 95%;
+
+    --popover: 220 15% 10%;
+    --popover-foreground: 220 15% 95%;
+
+    --primary: 217 91% 65%;
+    --primary-foreground: 220 15% 8%;
+
+    --secondary: 220 13% 15%;
+    --secondary-foreground: 220 15% 85%;
+
+    --muted: 220 13% 15%;
+    --muted-foreground: 220 9% 65%;
+
+    --accent: 220 13% 15%;
+    --accent-foreground: 220 15% 85%;
+
+    --destructive: 0 84% 65%;
+    --destructive-foreground: 220 15% 95%;
+
+    --border: 220 13% 15%;
+    --input: 220 13% 15%;
+    --ring: 217 91% 65%;
+    
+    /* Dark mode sidebar */
+    --sidebar-background: 220 15% 8%;
+    --sidebar-foreground: 220 15% 85%;
+    --sidebar-primary: 217 91% 65%;
+    --sidebar-primary-foreground: 220 15% 8%;
+    --sidebar-accent: 220 13% 15%;
+    --sidebar-accent-foreground: 220 15% 85%;
+    --sidebar-border: 220 13% 15%;
+    --sidebar-ring: 217 91% 65%;
+  }
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+  
+  .bg-gradient-card {
+    background: var(--gradient-card);
+  }
+  
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+  
+  .shadow-elegant {
+    box-shadow: var(--shadow-elegant);
+  }
+  
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+  
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+}

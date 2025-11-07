@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: humaniq-backend
+    env: node
+    plan: free
+    buildCommand: npm install --no-audit --no-fund
+    startCommand: npm run start:prod
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://www.humaniqai.com.br
+      - key: CORS_ORIGIN
+        value: https://www.humaniqai.com.br
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PUBLIC_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+    autoDeploy: true

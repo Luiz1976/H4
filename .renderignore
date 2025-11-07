@@ -1,0 +1,42 @@
+# ================================================
+# RENDER.COM - IGNORE FRONTEND FILES
+# ================================================
+# Arquivo para ignorar arquivos do frontend no deploy
+# Apenas o backend deve ser deployado no Render.com
+# ================================================
+
+# Frontend files and directories
+src/
+public/
+index.html
+vite.config.ts
+vite.config.js
+package-frontend.json
+package-backend.json
+
+# Development files
+*.log
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+Thumbs.db
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+
+# TypeScript build files
+*.tsbuildinfo
+dist/
+build/

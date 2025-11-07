@@ -1,0 +1,40 @@
+{
+  "name": "humaniq-backend",
+  "version": "1.0.0",
+  "description": "HumaniQ Backend API Server",
+  "main": "server/index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "node --import tsx/esm server/index.ts",
+    "dev": "node --watch --import tsx/esm server/index.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.58.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^5.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.10.0",
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.4.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.44.7",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^3.3.2",
+    "tsx": "^4.20.6",
+    "uuid": "^9.0.1",
+    "winston": "^3.18.3"
+  },
+  "keywords": [
+    "api",
+    "backend",
+    "humaniq",
+    "render"
+  ],
+  "author": "HumaniQ Team",
+  "license": "MIT"
+}
