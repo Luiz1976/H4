@@ -36,8 +36,8 @@ const items = [
     icon: Activity,
   },
   { 
-    title: "PRG", 
-    url: "/empresa/prg", 
+    title: "PGR", 
+    url: "/empresa/pgr", 
     icon: FileText,
   },
 ];

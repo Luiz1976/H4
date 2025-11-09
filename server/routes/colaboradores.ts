@@ -8,6 +8,66 @@ import { cursos } from '../../src/data/cursosData';
 
 const router = express.Router();
 
+// Listar colaboradores da empresa (empresa) ou por empresaId (admin)
+router.get('/', authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    // Empresa: lista apenas seus colaboradores
+    if (req.user?.role === 'empresa') {
+      if (!req.user.empresaId) {
+        return res.status(400).json({ error: 'EmpresaId ausente no token' });
+      }
+
+      const lista = await db
+        .select({
+          id: colaboradores.id,
+          nome: colaboradores.nome,
+          email: colaboradores.email,
+          cargo: colaboradores.cargo,
+          departamento: colaboradores.departamento,
+          avatar: colaboradores.avatar,
+          empresaId: colaboradores.empresaId,
+          ativo: colaboradores.ativo,
+          createdAt: colaboradores.createdAt,
+        })
+        .from(colaboradores)
+        .where(eq(colaboradores.empresaId, req.user.empresaId));
+
+      return res.json({ data: lista });
+    }
+
+    // Admin: pode listar por empresaId via query param
+    if (req.user?.role === 'admin') {
+      const empresaId = (req.query.empresaId as string) || null;
+      if (!empresaId) {
+        return res.status(400).json({ error: 'empresaId é obrigatório para admin' });
+      }
+
+      const lista = await db
+        .select({
+          id: colaboradores.id,
+          nome: colaboradores.nome,
+          email: colaboradores.email,
+          cargo: colaboradores.cargo,
+          departamento: colaboradores.departamento,
+          avatar: colaboradores.avatar,
+          empresaId: colaboradores.empresaId,
+          ativo: colaboradores.ativo,
+          createdAt: colaboradores.createdAt,
+        })
+        .from(colaboradores)
+        .where(eq(colaboradores.empresaId, empresaId));
+
+      return res.json({ data: lista });
+    }
+
+    // Colaborador: acesso negado para listar todos
+    return res.status(403).json({ error: 'Acesso negado. Apenas empresa/admin podem listar colaboradores.' });
+  } catch (error) {
+    console.error('Erro ao listar colaboradores:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 // Endpoint para colaborador obter seus próprios dados
 router.get('/me', authenticateToken, async (req: AuthRequest, res) => {
   try {

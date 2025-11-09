@@ -1127,7 +1127,7 @@ router.get('/estado-psicossocial', authenticateToken, async (req: AuthRequest, r
 });
 
 // 📊 PRG - Programa de Gestão de Riscos Psicossociais
-router.get('/prg', authenticateToken, async (req: AuthRequest, res) => {
+router.get('/pgr', authenticateToken, async (req: AuthRequest, res) => {
   try {
     let empresaId = req.user!.empresaId;
     
@@ -1140,7 +1140,12 @@ router.get('/prg', authenticateToken, async (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'ID da empresa é obrigatório' });
     }
 
-    console.log('📊 [PRG] Buscando dados do PRG para empresa:', empresaId);
+    console.log('📊 [PRG] Iniciando carregamento PGR', {
+      empresaId,
+      userRole: req.user?.role,
+      userId: req.user?.userId,
+      hasEmpresaInToken: Boolean(req.user?.empresaId),
+    });
 
     // Buscar dados da empresa
     const [empresa] = await db
@@ -1176,7 +1181,10 @@ router.get('/prg', authenticateToken, async (req: AuthRequest, res) => {
       .where(eq(resultados.empresaId, empresaId))
       .orderBy(desc(resultados.dataRealizacao));
 
-    console.log(`📊 [PRG] Encontrados ${resultadosList.length} resultados de testes`);
+    console.log(`📊 [PRG] Resultados encontrados`, {
+      totalResultados: resultadosList.length,
+      totalColaboradores: colaboradoresList.length,
+    });
 
     // ✨ USAR MESMA LÓGICA DO ESTADO PSICOSSOCIAL - Processar metadados dos testes
     const dimensoesAgregadas: Record<string, { total: number; soma: number }> = {};
@@ -1483,9 +1491,18 @@ router.get('/prg', authenticateToken, async (req: AuthRequest, res) => {
       const dimensoesAgregadas: Record<string, { soma: number; total: number }> = {};
       
       testesDoColab.forEach(teste => {
-        const metadados = typeof teste.metadados === 'string' ? JSON.parse(teste.metadados) : teste.metadados;
+        // Tratar metadados potencialmente inválidos (strings não-JSON, null, etc.)
+        let metadados: any = teste.metadados;
+        if (typeof metadados === 'string') {
+          try {
+            metadados = JSON.parse(metadados);
+          } catch (err) {
+            console.warn(`⚠️ [PRG] Metadados inválidos para resultado ${teste.id}:`, err);
+            metadados = {};
+          }
+        }
         
-        if (metadados?.pontuacoes_dimensoes) {
+        if (metadados && metadados.pontuacoes_dimensoes) {
           Object.entries(metadados.pontuacoes_dimensoes).forEach(([dimensaoId, valor]) => {
             if (typeof valor === 'number') {
               if (!dimensoesAgregadas[dimensaoId]) {
@@ -1493,12 +1510,12 @@ router.get('/prg', authenticateToken, async (req: AuthRequest, res) => {
               }
               dimensoesAgregadas[dimensaoId].soma += valor;
               dimensoesAgregadas[dimensaoId].total++;
-            } else if (typeof valor === 'object' && valor !== null && 'percentual' in valor) {
+            } else if (typeof valor === 'object' && valor !== null && 'percentual' in (valor as any)) {
               const percentual = (valor as any).percentual;
               if (!dimensoesAgregadas[dimensaoId]) {
                 dimensoesAgregadas[dimensaoId] = { soma: 0, total: 0 };
               }
-              dimensoesAgregadas[dimensaoId].soma += percentual;
+              dimensoesAgregadas[dimensaoId].soma += Number(percentual) || 0;
               dimensoesAgregadas[dimensaoId].total++;
             }
           });
@@ -1558,10 +1575,10 @@ router.get('/prg', authenticateToken, async (req: AuthRequest, res) => {
         { name: 'Clima Positivo' }   // 5
       ],
       links: [
-        // De riscos para clima
-        { source: 0, target: 3, value: Math.max(colaboradoresPorRisco.critico + colaboradoresPorRisco.alto, 1) },
-        { source: 1, target: 4, value: Math.max(colaboradoresPorRisco.moderado, 1) },
-        { source: 2, target: 5, value: Math.max(colaboradoresPorRisco.baixo + colaboradoresPorRisco.saudavel, 1) }
+        // De riscos para clima (sem mínimo artificial)
+        { source: 0, target: 3, value: (colaboradoresPorRisco.critico + colaboradoresPorRisco.alto) },
+        { source: 1, target: 4, value: (colaboradoresPorRisco.moderado) },
+        { source: 2, target: 5, value: (colaboradoresPorRisco.baixo + colaboradoresPorRisco.saudavel) }
       ]
     };
 
@@ -1616,7 +1633,7 @@ router.get('/prg', authenticateToken, async (req: AuthRequest, res) => {
 });
 
 // 🔓 ROTA PÚBLICA - Acessar PRG via QR Code (SEM AUTENTICAÇÃO)
-router.get('/prg/publico/:token', async (req, res) => {
+router.get('/pgr/publico/:token', async (req, res) => {
   try {
     console.log('🔓 [PRG Público] Requisição recebida para token:', req.params.token);
 

@@ -18,7 +18,14 @@ const PostLoginAnimation: React.FC = () => {
   const handleAnimationComplete = () => {
     // Após a animação, redirecionar para a página apropriada baseada no papel do usuário
     if (user) {
-      switch (user.role) {
+      // Fail-safe: se vier como admin mas possuir empresaId, tratar como empresa
+      const effectiveRole = user.role === 'admin' && user.empresaId ? 'empresa' : user.role;
+      console.log('[PostLoginAnimation] Redirecionamento pós-login', {
+        roleOriginal: user.role,
+        empresaId: user.empresaId,
+        roleEfetivo: effectiveRole,
+      });
+      switch (effectiveRole) {
         case 'admin':
           navigate('/admin', { replace: true });
           break;

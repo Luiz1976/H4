@@ -215,12 +215,16 @@ class AuthServiceNew {
         colaborador: '/colaborador',
       };
 
+      // Fail-safe: se vier role 'admin' mas com empresaId, tratar como 'empresa'
+      const effectiveRole: 'admin' | 'empresa' | 'colaborador' =
+        response.user?.role === 'admin' && response.user?.empresaId ? 'empresa' : response.user?.role;
+
       const user: User = {
         id: response.user.id,
         email: response.user.email,
         name: response.user.nome || response.user.name,
-        role: response.user.role,
-        redirectUrl: roleMap[response.user.role] || '/',
+        role: effectiveRole,
+        redirectUrl: roleMap[effectiveRole] || '/',
         empresaId: response.user.empresaId,
         avatar: response.user.avatar,
         cargo: response.user.cargo,
@@ -290,6 +294,17 @@ class AuthServiceNew {
     }
   }
 
+  async excluirEmpresa(id: string): Promise<{ success: boolean; message?: string }> {
+    try {
+      const response = await this.makeRequest<{ success: boolean; message: string }>(`/api/empresas/${id}`, {
+        method: 'DELETE'
+      });
+      return { success: response.success, message: response.message };
+    } catch (error) {
+      return { success: false, message: error instanceof Error ? error.message : 'Erro ao excluir empresa' };
+    }
+  }
+
   async getColaboradores(): Promise<{ success: boolean; data?: any[]; message?: string }> {
     try {
       const response = await this.makeRequest<{ data: any[] }>('/api/colaboradores', {
@@ -325,4 +340,4 @@ class AuthServiceNew {
 }
 
 export const authServiceNew = new AuthServiceNew();
-
+

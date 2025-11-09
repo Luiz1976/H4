@@ -2,10 +2,10 @@
   "name": "humaniq-api-server",
   "version": "1.0.0",
   "description": "API Server para endpoints seguros do Humaniq",
-  "main": "server.js",
+  "main": "index.ts",
   "scripts": {
-    "start": "node app.js",
-    "dev": "node --watch app.js",
+    "start": "tsx index.ts",
+    "dev": "tsx watch index.ts",
     "test": "node test-api-server.js"
   },
   "dependencies": {

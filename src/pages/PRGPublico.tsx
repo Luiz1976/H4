@@ -22,9 +22,9 @@ import {
   AlertCircle
 } from "lucide-react";
 import Logo from '@/components/Logo';
-import MatrizRisco from "@/components/prg/MatrizRisco";
-import GraficoDistribuicaoRiscos from "@/components/prg/GraficoDistribuicaoRiscos";
-import GraficoRadarDimensoes from "@/components/prg/GraficoRadarDimensoes";
+import MatrizRisco from "@/components/pgr/MatrizRisco";
+import GraficoDistribuicaoRiscos from "@/components/pgr/GraficoDistribuicaoRiscos";
+import GraficoRadarDimensoes from "@/components/pgr/GraficoRadarDimensoes";
 import RiskGauge from "@/components/RiskGauge";
 
 interface EmpresaData {
@@ -108,9 +108,9 @@ export default function PRGPublico() {
           throw new Error('Token de compartilhamento inválido');
         }
 
-        console.log('📊 [PRG Público] Carregando dados compartilhados...');
+        console.log('📊 [PGR Público] Carregando dados compartilhados...');
         
-        const response = await fetch(`/api/empresas/prg/publico/${token}`, {
+const response = await fetch(`/api/empresas/pgr/publico/${token}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
@@ -118,15 +118,15 @@ export default function PRGPublico() {
         });
 
         if (!response.ok) {
-          throw new Error('Não foi possível carregar os dados do PRG');
+          throw new Error('Não foi possível carregar os dados do PGR');
         }
 
         const data = await response.json();
         setPrgData(data);
-        console.log('✅ [PRG Público] Dados carregados com sucesso');
+        console.log('✅ [PGR Público] Dados carregados com sucesso');
         
       } catch (err) {
-        console.error('❌ [PRG Público] Erro:', err);
+        console.error('❌ [PGR Público] Erro:', err);
         setError(err instanceof Error ? err.message : 'Erro desconhecido');
       } finally {
         setLoading(false);
@@ -225,7 +225,7 @@ export default function PRGPublico() {
       isRisk: true
     },
     {
-      titulo: "Maturidade do PRG",
+      titulo: "Maturidade do PGR",
       subtitulo: "Nível de implementação do programa",
       valor: prgData.kpis.maturidadePRG,
       icon: TrendingUp,
@@ -286,7 +286,7 @@ export default function PRGPublico() {
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
                         <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-white leading-tight">
-                          Relatório Executivo PRG
+                          Relatório Executivo PGR
                         </h1>
                         <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 backdrop-blur-xl shrink-0">
                           <Sparkles className="h-3 w-3 mr-1" />
@@ -400,12 +400,12 @@ export default function PRGPublico() {
                     <CardHeader>
                       <CardTitle className="text-white text-lg md:text-xl flex items-center gap-2">
                         <AlertCircle className="h-5 w-5 md:h-6 md:w-6" />
-                        O que é o PRG?
+                        O que é o PGR?
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="text-white/80 space-y-3 text-sm md:text-base leading-relaxed">
                       <p>
-                        O <strong>Programa de Gestão de Riscos Psicossociais (PRG)</strong> é uma ferramenta estratégica para identificar, 
+                        O <strong>Programa de Gestão de Riscos Psicossociais (PGR)</strong> é uma ferramenta estratégica para identificar, 
                         avaliar e mitigar fatores que podem afetar a saúde mental e o bem-estar dos colaboradores.
                       </p>
                       <p>
@@ -696,7 +696,7 @@ export default function PRGPublico() {
                 A <strong>HumaniQ AI</strong> é uma plataforma inteligente especializada na análise e gestão de riscos psicossociais e ocupacionais, 
                 desenvolvida com base na NR-01 e demais normativas vigentes de Saúde e Segurança do Trabalho (SST). 
                 Utilizando inteligência artificial e metodologia científica, a HumaniQ AI realiza diagnósticos automatizados, 
-                cruzamento de dados de testes psicossociais e comportamentais, e gera relatórios técnicos que subsidiam a construção do PRG 
+                cruzamento de dados de testes psicossociais e comportamentais, e gera relatórios técnicos que subsidiam a construção do PGR 
                 – Programa de Gerenciamento de Riscos, de forma precisa, ética e em conformidade com os princípios da prevenção e melhoria contínua.
               </p>
               <p className="text-white/60 text-xs">

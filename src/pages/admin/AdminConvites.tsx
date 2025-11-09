@@ -73,48 +73,57 @@ export default function AdminConvites() {
   const carregarConvites = async () => {
     try {
       setLoading(true);
-      
-      // Buscar token de autenticação
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        console.error('Token de autenticação não encontrado');
-        setConvites([]);
-        setLoading(false);
-        return;
-      }
-      
-      // Buscar dados reais do banco de dados via API
-      const response = await fetch('/api/convites/listar?tipo=empresa', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      // Usar apiService para garantir headers/URL corretos
+      const data = await apiService.listarConvites();
+      console.warn('📥 [AdminConvites] Resposta da API de convites (raw):', data);
 
-      const data = await response.json();
-      console.log('📥 Resposta da API de convites:', data);
+      if (data && data.convites) {
+        const convitesFormatados = data.convites.map((convite: any, idx: number) => {
+          if (idx === 0) {
+            console.warn('🔎 [AdminConvites] Convite exemplo (raw):', convite);
+            console.warn('🧩 [AdminConvites] Chaves do convite[0]:', Object.keys(convite));
+            console.warn('⏰ [AdminConvites] Campos de criação[0]:', {
+              createdAt: convite.createdAt,
+              created_at: convite.created_at,
+              dataCriacao: convite.dataCriacao,
+              data_criacao: convite.data_criacao,
+            });
+          }
+          const rawCreated = convite.createdAt ?? convite.created_at ?? convite.dataCriacao ?? convite.data_criacao;
+          let dataCriacaoCalculada = rawCreated;
+          // Fallback: se não houver data de criação, estimar como validade - diasAcesso
+          const diasAcesso = Number((convite as any).diasAcesso ?? (convite as any).dias_acesso);
+          if (!dataCriacaoCalculada && convite.validade && !Number.isNaN(diasAcesso) && diasAcesso > 0) {
+            const exp = new Date(convite.validade);
+            if (!isNaN(exp.getTime())) {
+              const criado = new Date(exp.getTime() - diasAcesso * 24 * 60 * 60 * 1000);
+              dataCriacaoCalculada = criado.toISOString();
+              if (idx < 3) console.warn('🧮 [AdminConvites] Fallback dataCriacao calculada:', dataCriacaoCalculada, 'a partir de validade', convite.validade, 'e dias', diasAcesso);
+            }
+          }
+          if (idx < 3) {
+            console.warn('⏱️ [AdminConvites] rawCreated[' + idx + ']:', rawCreated, 'typeof:', typeof rawCreated, 'diasAcesso:', diasAcesso);
+          }
+          return {
+            id: convite.id,
+            token: convite.token,
+            nomeEmpresa: convite.nomeEmpresa || convite.nome_empresa || convite.nome,
+            emailContato: convite.emailContato || convite.email_contato || convite.email,
+            validade: convite.validade,
+            status: convite.status,
+            // manter o valor cru; o formatador lida com Date/string
+            dataCriacao: dataCriacaoCalculada
+          } as ConviteEmpresa;
+        });
 
-      if (data.success && data.convites) {
-        // Mapear os dados do banco para o formato esperado pelo componente
-        const convitesFormatados = data.convites.map((convite: any) => ({
-          id: convite.id,
-          token: convite.token,
-          nomeEmpresa: convite.nome_empresa || convite.nomeEmpresa,
-          emailContato: convite.email_contato || convite.emailContato,
-          validade: convite.validade,
-          status: convite.status,
-          dataCriacao: convite.created_at || convite.dataCriacao
-        }));
-        
-        console.log('✅ Convites formatados:', convitesFormatados);
+        console.warn('✅ [AdminConvites] Convites formatados (primeiro):', convitesFormatados[0]);
         setConvites(convitesFormatados);
       } else {
-        console.log('⚠️ Nenhum convite encontrado ou erro na resposta');
+        console.log('⚠️ [AdminConvites] Nenhum convite encontrado ou resposta sem convites');
         setConvites([]);
       }
     } catch (error) {
-      console.error('❌ Erro ao carregar convites:', error);
+      console.error('❌ [AdminConvites] Erro ao carregar convites:', error);
       toast.error('Erro ao carregar convites do banco de dados');
       setConvites([]);
     } finally {
@@ -130,41 +139,27 @@ export default function AdminConvites() {
 
     try {
       setLoading(true);
-      const user = authService.getCurrentUser();
-      
-      const response = await fetch('/api/invitations/empresa', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          nome_empresa: novoConvite.nomeEmpresa,
-          email_contato: novoConvite.emailContato,
-          cnpj: novoConvite.cnpj,
-          numero_colaboradores: novoConvite.numeroColaboradores,
-          dias_expiracao: novoConvite.diasExpiracao,
-          admin_id: user?.id
-        })
+      // Usar apiService para POST com headers/token
+      const convite = await apiService.criarConviteEmpresa({
+        nomeEmpresa: novoConvite.nomeEmpresa,
+        emailContato: novoConvite.emailContato,
+        telefone: undefined,
+        numeroColaboradores: novoConvite.numeroColaboradores,
+        diasValidade: novoConvite.diasExpiracao
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success('Convite criado com sucesso!', {
-          description: `Enviado para ${novoConvite.emailContato}`
-        });
-        setShowNovoConviteModal(false);
-        setNovoConvite({
-          nomeEmpresa: '',
-          emailContato: '',
-          cnpj: '',
-          numeroColaboradores: 50,
-          diasExpiracao: 30
-        });
-        carregarConvites();
-      } else {
-        toast.error(data.message || 'Erro ao criar convite');
-      }
+      toast.success('Convite criado com sucesso!', {
+        description: `Enviado para ${novoConvite.emailContato}`
+      });
+      setShowNovoConviteModal(false);
+      setNovoConvite({
+        nomeEmpresa: '',
+        emailContato: '',
+        cnpj: '',
+        numeroColaboradores: 50,
+        diasExpiracao: 30
+      });
+      carregarConvites();
     } catch (error) {
       console.error('Erro ao criar convite:', error);
       toast.error('Erro ao criar convite');
@@ -175,15 +170,7 @@ export default function AdminConvites() {
 
   const cancelarConvite = async (token: string) => {
     try {
-      const response = await fetch(`/api/invitations/empresa/${token}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const data = await response.json();
-
+      const data = await apiService.cancelarConviteEmpresa(token);
       if (data.success) {
         toast.success('Convite cancelado com sucesso');
         carregarConvites();
@@ -205,16 +192,64 @@ export default function AdminConvites() {
     });
   };
 
-  const formatarData = (data: string) => {
-    return new Date(data).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    });
+  const parseDate = (data: any): Date | null => {
+    if (!data) return null;
+    if (data instanceof Date) return data;
+    if (typeof data === 'string') {
+      let s = data.trim();
+      // Tentar timestamp numérico (segundos ou milissegundos)
+      if (/^\d{10,13}$/.test(s)) {
+        const ts = Number(s.length === 13 ? s : String(Number(s) * 1000));
+        const dNum = new Date(ts);
+        return isNaN(dNum.getTime()) ? null : dNum;
+      }
+      // Normalizar formatos comuns: "YYYY-MM-DD HH:mm:ss+ZZ" → ISO
+      if (s.includes(' ') && !s.includes('T')) s = s.replace(' ', 'T');
+      // Converter "+00" para "Z" e lidar com "+0000"
+      if (/\+\d{2}$/.test(s)) s = s + ':00';
+      if (/\+\d{4}$/.test(s)) s = s.replace(/\+\d{4}$/, 'Z');
+      if (s.endsWith('+00')) s = s.replace('+00', 'Z');
+      const d = new Date(s);
+      if (isNaN(d.getTime())) {
+        console.warn('⚠️ [AdminConvites] parseDate inválido:', { input: data, normalizado: s });
+        return null;
+      }
+      return d;
+    }
+    return null;
   };
 
-  const formatarDataCompleta = (data: string) => {
-    return new Date(data).toLocaleDateString('pt-BR', {
+  const formatarData = (data: any) => {
+    const d = parseDate(data);
+    if (d) {
+      return d.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+    // Fallback de exibição: se veio string não parseável, mostrar parte da data
+    if (typeof data === 'string' && data.trim().length > 0) {
+      const m = data.match(/^(\d{4}-\d{2}-\d{2})/);
+      if (m) {
+        const onlyDate = new Date(m[1]);
+        if (!isNaN(onlyDate.getTime())) {
+          return onlyDate.toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+          });
+        }
+      }
+      return data;
+    }
+    return '—';
+  };
+
+  const formatarDataCompleta = (data: any) => {
+    const d = parseDate(data);
+    if (!d) return '—';
+    return d.toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: 'long',
       year: 'numeric',
@@ -251,6 +286,11 @@ export default function AdminConvites() {
     
     return matchesSearch && matchesStatus;
   });
+
+  // Debug visual: quantidades
+  if (typeof window !== 'undefined') {
+    console.warn('[AdminConvites] Quantidades → total:', convites.length, 'filtrados:', convitesFiltrados.length, 'statusFiltro:', statusFiltroConvites, 'filtroTexto:', filtroConvites);
+  }
 
   const getStatusBadge = (convite: ConviteEmpresa) => {
     const status = getStatusConvite(convite);
@@ -301,14 +341,7 @@ export default function AdminConvites() {
             </h1>
             <p className="text-gray-600">Crie e gerencie convites para novas empresas</p>
           </div>
-          <Button
-            onClick={() => setShowNovoConviteModal(true)}
-            className="mt-4 md:mt-0 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
-            data-testid="button-novo-convite"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Novo Convite
-          </Button>
+          {/* Botão de ação removido conforme solicitação */}
         </div>
 
         {/* Cards de Estatísticas */}
@@ -480,7 +513,7 @@ export default function AdminConvites() {
                         <Calendar className="w-4 h-4 mr-2 text-gray-400" />
                         <span className="text-xs">Criado em:</span>
                         <span className="ml-auto font-medium text-gray-900">
-                          {formatarData(convite.dataCriacao || convite.validade)}
+                          {convite.dataCriacao ? formatarData(convite.dataCriacao) : '—'}
                         </span>
                       </div>
                       

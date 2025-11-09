@@ -1,10 +1,11 @@
 import { useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { resultadosService } from '@/lib/resultadosServiceNew';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
+import { apiService } from '@/services/apiService';
+import { useToast } from '@/hooks/use-toast';
 import {
   BarChart,
   Bar,
@@ -48,69 +49,57 @@ interface DimensaoResultado {
 
 export default function ResultadoHumaniQInsight() {
   const { resultadoId } = useParams();
+  const [resultado, setResultado] = useState<any>(null);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState<string | null>(null);
+  const { toast } = useToast();
 
-  // MOCK DE DADOS para demonstração (em produção viria da API)
-  const resultado = {
-    id: resultadoId,
-    pontuacaoTotal: 147,
-    tempoGasto: 246,
-    metadados: {
-      pontuacoes_dimensoes: {
-        'seguranca-psicologica': 1.83,
-        'comunicacao-interna': 3.00,
-        'pertencimento': 4.67,
-        'justica-organizacional': 2.75
-      },
-      interpretacao: `Analise Detalhada
+  useEffect(() => {
+    carregarResultado();
+  }, [resultadoId]);
 
-Interpretacao profissional dos seus resultados
+  const carregarResultado = async () => {
+    if (!resultadoId) {
+      setErro("ID do resultado não fornecido");
+      setCarregando(false);
+      return;
+    }
 
-Diagnostico Organizacional HumaniQ Insight
+    console.log('🔍 [HumaniQ Insight] Carregando resultado:', resultadoId);
 
-Indice de Clima Organizacional: 3.06/5.00
-Classificacao do Ambiente: Equilibrio Moderado com Pontos de Atencao
+    try {
+      setCarregando(true);
+      const response = await apiService.obterResultadoPorId(resultadoId);
+      
+      if (!response?.resultado) {
+        throw new Error("Resultado não encontrado na resposta da API");
+      }
 
-Sintese Executiva do Diagnostico
+      const dadosCompletos = response.resultado;
+      console.log('✅ [HumaniQ Insight] Dados recebidos:', dadosCompletos);
 
-Os dados coletados revelam um ecossistema organizacional em estado de equilibrio intermediario. A analise multidimensional indica a coexistencia de elementos positivos consolidados e areas criticas que demandam intervencao estrategica imediata. O padrao observado sugere uma organizacao em transicao, com potencial de evolucao significativo mediante implementacao de acoes direcionadas.
+      // Validar estrutura esperada
+      if (!dadosCompletos.metadados?.pontuacoes_dimensoes) {
+        throw new Error("Dados do HumaniQ Insight incompletos - metadados ausentes");
+      }
 
-Mapeamento Dimensional do Clima Organizacional
+      setResultado(dadosCompletos);
 
-Dimensao 1 - Seguranca Psicologica: 1.83/5.00
-Status: Zona Critica de Risco Psicossocial
-
-Indicador de liberdade expressiva e autonomia comunicacional. Mensura o grau em que colaboradores sentem-se seguros para manifestar opinioes divergentes, assumir riscos calculados e relatar erros sem temer consequencias negativas. A pontuacao critica nesta dimensao indica ambiente com potencial elevado de autocensura e inibicao da inovacao.
-
-Dimensao 2 - Comunicacao Interna: 3.00/5.00
-Status: Patamar Intermediario Funcional
-
-Avalia a eficiencia dos canais de informacao, transparencia nos fluxos comunicacionais e alinhamento entre diferentes niveis hierarquicos. A pontuacao mediana sugere estruturas comunicacionais estabelecidas, porem com gaps de efetividade que podem impactar a sincronia organizacional e a execucao estrategica.
-
-Dimensao 3 - Pertencimento e Integracao: 4.67/5.00
-Status: Excelencia em Engagement Coletivo
-
-Dimensao que reflete o vinculo emocional e senso de identificacao dos colaboradores com a organizacao. A alta pontuacao evidencia cultura de inclusao consolidada, forte coesao grupal e alinhamento de valores individuais com os propositos corporativos. Este e o principal ativo estrategico identificado no diagnostico.
-
-Dimensao 4 - Justica Organizacional: 2.75/5.00
-Status: Percepcao Ambivalente de Equidade
-
-Mensura a percepção de fairness nos processos decisorios, distribuicao de recompensas, aplicacao de politicas e consistencia nos criterios avaliativos. O score moderado indica inconsistencias percebidas nos sistemas de reconhecimento e possivel falta de clareza nos criterios meritocraticos.
-`,
-      recomendacoes: [
-        "Implementar programa estruturado de desenvolvimento de lideranca com foco em seguranca psicologica e gestao humanizada utilizando metodologias baseadas em neurociencia organizacional",
-        "Estabelecer infraestrutura digital de feedback continuo com canais anonimos de comunicacao ascendente garantindo confidencialidade atraves de plataformas criptografadas",
-        "Desenvolver framework cultural de aprendizagem organizacional transformando falhas em oportunidades de evolucao sistematica sem aplicacao de medidas punitivas",
-        "Priorizar investimentos estrategicos nas dimensoes com deficit critico aplicando analise de impacto ROI para maximizar resultados organizacionais mensuraveis",
-        "Consolidar praticas de manutencao preventiva nas areas de excelencia estabelecendo protocolos de monitoramento continuo para sustentacao do desempenho superior",
-        "Criar dashboard de metricas de clima organizacional com indicadores-chave de performance em tempo real permitindo tomada de decisao baseada em dados e gestao preditiva de riscos psicossociais"
-      ]
+    } catch (error) {
+      console.error('❌ [HumaniQ Insight] Erro ao carregar:', error);
+      const mensagemErro = error instanceof Error ? error.message : 'Erro ao carregar resultado';
+      setErro(mensagemErro);
+      toast({
+        title: "Erro",
+        description: mensagemErro,
+        variant: "destructive",
+      });
+    } finally {
+      setCarregando(false);
     }
   };
 
-  const isLoading = false;
-  const error = null;
-
-  if (isLoading) {
+  if (carregando) {
     return (
       <div className="container max-w-7xl mx-auto p-6 space-y-6">
         <Skeleton className="h-48 w-full" />
@@ -122,7 +111,7 @@ Mensura a percepção de fairness nos processos decisorios, distribuicao de reco
     );
   }
 
-  if (error || !resultado) {
+  if (erro || !resultado) {
     return (
       <div className="container max-w-4xl mx-auto p-6">
         <Card className="border-destructive">

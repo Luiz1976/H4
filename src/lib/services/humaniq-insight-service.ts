@@ -102,7 +102,7 @@ class HumaniQInsightService {
           usuario_nome: usuarioNome,
           usuario_email: usuarioEmail,
           pontuacoes_dimensoes: pontuacoesDimensoes,
-          // Formato compatível com agregação do backend (estado-psicossocial e PRG)
+// Formato compatível com agregação do backend (estado-psicossocial e PGR)
           analise_completa: {
             ...analiseHumaniQInsight,
             dimensoes: dimensoesParaBackend // Dimensões no formato esperado pelo backend

@@ -10,7 +10,9 @@ export default function ModuleSelection() {
 
   // Se o usuário já está logado, redirecionar para sua página específica
   if (user) {
-    switch (user.role) {
+    // Fail-safe: se vier role 'admin' mas com empresaId, tratar como 'empresa'
+    const effectiveRole = user.role === 'admin' && user.empresaId ? 'empresa' : user.role;
+    switch (effectiveRole) {
       case 'admin':
         return <Navigate to="/admin" replace />;
       case 'empresa':

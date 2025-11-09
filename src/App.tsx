@@ -112,7 +112,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/recuperar-senha" element={<RecuperarSenha />} />
               <Route path="/aceitar-convite/:token" element={<AcessoConvite />} />
-              <Route path="/prg/compartilhado/:token" element={<PRGPublico />} />
+              <Route path="/pgr/compartilhado/:token" element={<PRGPublico />} />
               <Route 
                 path="/post-login-animation" 
                 element={
@@ -215,7 +215,7 @@ function App() {
                 <Route path="gestao-convites" element={<EmpresaGestaoConvites />} />
                 <Route path="gerar-convite" element={<EmpresaGerarConvite />} />
                 <Route path="estado-psicossocial" element={<EmpresaEstadoPsicossocial />} />
-                <Route path="prg" element={<EmpresaPRG />} />
+                <Route path="pgr" element={<EmpresaPRG />} />
                 <Route path="resultados" element={<EmpresaResultados />} />
                 <Route path="colaborador/:colaboradorId/resultados" element={<EmpresaColaboradorResultados />} />
               </Route>

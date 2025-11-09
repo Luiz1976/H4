@@ -541,7 +541,7 @@ export default function LandingPage() {
                 },
                 {
                   icon: Shield,
-                  titulo: 'Gestão de Riscos PRG',
+  titulo: 'Gestão de Riscos PGR',
                   duracao: '12h',
                   nivel: 'Estratégico',
                   topicos: ['PGR Psicossocial', 'ISO 45003', 'GRO Integrado'],
@@ -1017,7 +1017,7 @@ export default function LandingPage() {
                   </li>
                   <li className="flex items-start">
                     <X className="h-5 w-5 text-gray-400 mr-2 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-500">Módulo PRG</span>
+  <span className="text-gray-500">Módulo PGR</span>
                   </li>
                 </ul>
 
@@ -1078,7 +1078,7 @@ export default function LandingPage() {
                   </li>
                   <li className="flex items-start">
                     <Check className="h-5 w-5 text-indigo-600 mr-2 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700"><strong>Módulo PRG completo</strong></span>
+  <span className="text-gray-700"><strong>Módulo PGR completo</strong></span>
                   </li>
                   <li className="flex items-start">
                     <Check className="h-5 w-5 text-indigo-600 mr-2 mt-0.5 flex-shrink-0" />
@@ -1363,7 +1363,7 @@ export default function LandingPage() {
                   { feature: 'Análise com IA (Google Gemini)', essencial: false, profissional: true, enterprise: true },
                   { feature: 'Dashboard de resultados', essencial: 'Básico', profissional: 'Avançado', enterprise: 'Avançado' },
                   { feature: 'Relatórios de compliance (NR-1, ISO 45003)', essencial: false, profissional: true, enterprise: true },
-                  { feature: 'Módulo PRG completo', essencial: false, profissional: true, enterprise: true },
+  { feature: 'Módulo PGR completo', essencial: false, profissional: true, enterprise: true },
                   { feature: 'Exportação PDF e Excel', essencial: false, profissional: true, enterprise: true },
                   { feature: 'API para integração', essencial: false, profissional: false, enterprise: true },
                   { feature: 'Múltiplas empresas/unidades', essencial: false, profissional: false, enterprise: true },

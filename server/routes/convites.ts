@@ -1,9 +1,9 @@
 import express from 'express';
-import { db } from '../../db';
-import { convitesEmpresa, convitesColaborador, empresas, colaboradores, insertConviteEmpresaSchema, insertConviteColaboradorSchema, insertEmpresaSchema, insertColaboradorSchema } from '../../shared/schema';
+import { db } from '../db';
+import { convitesEmpresa, convitesColaborador, empresas, colaboradores, configuracoesSistema, insertConviteEmpresaSchema, insertConviteColaboradorSchema, insertEmpresaSchema, insertColaboradorSchema } from '../../shared/schema';
 import { hashPassword, generateInviteToken } from '../utils/auth';
 import { authenticateToken, requireAdmin, requireEmpresa, AuthRequest } from '../middleware/auth';
-import { eq, and, gt } from 'drizzle-orm';
+import { eq, and, gt, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { enviarConviteEmpresa, enviarConviteColaborador, enviarBoasVindas } from '../services/emailService';
 
@@ -12,19 +12,69 @@ const router = express.Router();
 // Admin cria convite para empresa
 router.post('/empresa', authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
   try {
-    const validationResult = insertConviteEmpresaSchema.omit({ token: true, validade: true }).extend({
-      diasValidade: z.number().min(1).max(90).default(7),
+    const validationResult = insertConviteEmpresaSchema.omit({ token: true, validade: true, adminId: true }).extend({
+      diasValidade: z.number().min(1).max(30).default(7),
+      telefone: z.string().optional().nullable(),
     }).safeParse(req.body);
 
     if (!validationResult.success) {
       return res.status(400).json({ error: 'Dados inválidos', details: validationResult.error.issues });
     }
 
-    const { nomeEmpresa, emailContato, cnpj, numeroColaboradores, diasAcesso, diasValidade, ...rest } = validationResult.data;
+    const { nomeEmpresa, emailContato, telefone, cnpj, numeroColaboradores, diasAcesso, diasValidade, ...rest } = validationResult.data;
 
     const [existingEmpresa] = await db.select().from(empresas).where(eq(empresas.emailContato, emailContato)).limit(1);
     if (existingEmpresa) {
       return res.status(409).json({ error: 'Email já cadastrado' });
+    }
+
+    // Validar limite de colaboradores
+    if (numeroColaboradores && (numeroColaboradores < 1 || numeroColaboradores > 10000)) {
+      return res.status(400).json({ error: 'Número de colaboradores deve estar entre 1 e 10.000' });
+    }
+
+    // Verificar limite de convites por empresa (se já existir empresa com mesmo email)
+    if (numeroColaboradores) {
+      try {
+        let limiteMaximo = 1000;
+        if (typeof configuracoesSistema !== 'undefined') {
+          // Buscar configuração de limite máximo de colaboradores por empresa (se tabela existir)
+          const [configLimite] = await db
+            .select()
+            .from(configuracoesSistema)
+            .where(eq(configuracoesSistema.chave, 'max_colaboradores_por_empresa'))
+            .limit(1);
+
+          limiteMaximo = configLimite ? parseInt((configLimite as any).valor) : 1000;
+        }
+
+        // Verificar se já existe empresa com este email de contato
+        const [empresaExistente] = await db
+          .select()
+          .from(empresas)
+          .where(eq(empresas.emailContato, emailContato))
+          .limit(1);
+
+        if (empresaExistente) {
+          // Verificar quantidade atual de colaboradores da empresa
+          const [result] = await db
+            .select({ count: sql<number>`count(*)` })
+            .from(colaboradores)
+            .where(eq(colaboradores.empresaId, empresaExistente.id));
+
+          const colaboradoresAtuais = (result as any)?.count || 0;
+          const totalAposConvite = colaboradoresAtuais + (numeroColaboradores || 0);
+
+          if (totalAposConvite > limiteMaximo) {
+            return res.status(400).json({ 
+              error: `Limite de colaboradores excedido. A empresa já possui ${colaboradoresAtuais} colaboradores. O máximo permitido é ${limiteMaximo} colaboradores.` 
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao verificar limite de colaboradores:', error);
+        // Continuar com o convite mesmo se houver erro na verificação
+      }
     }
 
     const token = generateInviteToken();
@@ -37,6 +87,7 @@ router.post('/empresa', authenticateToken, requireAdmin, async (req: AuthRequest
         token,
         nomeEmpresa,
         emailContato,
+        telefone: telefone || null,
         cnpj: cnpj || null,
         numeroColaboradores: numeroColaboradores || null,
         diasAcesso: diasAcesso || null,
@@ -208,6 +259,7 @@ router.post('/empresa/aceitar/:token', async (req, res) => {
     const { token } = req.params;
     const validationResult = z.object({
       senha: z.string().min(8),
+      logoBase64: z.string().optional().nullable(),
     }).safeParse(req.body);
 
     if (!validationResult.success) {
@@ -240,6 +292,11 @@ router.post('/empresa/aceitar/:token', async (req, res) => {
         })()
       : null;
 
+    const configuracoes: any = {};
+    if (validationResult.data.logoBase64) {
+      configuracoes.logo = validationResult.data.logoBase64;
+    }
+
     const [novaEmpresa] = await db
       .insert(empresas)
       .values({
@@ -251,6 +308,7 @@ router.post('/empresa/aceitar/:token', async (req, res) => {
         diasAcesso: convite.diasAcesso || null,
         dataExpiracao: dataExpiracao,
         adminId: convite.adminId,
+        configuracoes,
         ativa: true,
       })
       .returning();
@@ -373,6 +431,17 @@ router.get('/listar', authenticateToken, async (req: AuthRequest, res) => {
         .from(convitesEmpresa)
         .orderBy(convitesEmpresa.createdAt);
 
+      try {
+        console.log(`📤 [API] /convites/listar (admin) → convites_empresa count: ${convitesEmpresas.length}`);
+        if (convitesEmpresas.length > 0) {
+          const amostra = convitesEmpresas[0] as any;
+          console.log('🔎 [API] Convite empresa (amostra) chaves:', Object.keys(amostra));
+          console.log('⏰ [API] createdAt:', amostra.createdAt, 'validade:', amostra.validade, 'diasAcesso:', amostra.diasAcesso);
+        }
+      } catch (logErr) {
+        console.warn('⚠️ [API] Falha ao logar convites_empresa:', logErr);
+      }
+
       return res.json({ success: true, convites: convitesEmpresas, tipo: 'empresa' });
     } else if (req.user!.role === 'empresa') {
       const convitesColaboradores = await db
@@ -380,6 +449,17 @@ router.get('/listar', authenticateToken, async (req: AuthRequest, res) => {
         .from(convitesColaborador)
         .where(eq(convitesColaborador.empresaId, req.user!.empresaId!))
         .orderBy(convitesColaborador.createdAt);
+
+      try {
+        console.log(`📤 [API] /convites/listar (empresa) → convites_colaborador count: ${convitesColaboradores.length}`);
+        if (convitesColaboradores.length > 0) {
+          const amostra = convitesColaboradores[0] as any;
+          console.log('🔎 [API] Convite colaborador (amostra) chaves:', Object.keys(amostra));
+          console.log('⏰ [API] createdAt:', amostra.createdAt, 'validade:', amostra.validade);
+        }
+      } catch (logErr) {
+        console.warn('⚠️ [API] Falha ao logar convites_colaborador:', logErr);
+      }
 
       return res.json({ success: true, convites: convitesColaboradores, tipo: 'colaborador' });
     }
@@ -462,6 +542,35 @@ router.delete('/empresa/:token', authenticateToken, requireAdmin, async (req: Au
   } catch (error) {
     console.error('Erro ao cancelar convite empresa:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Buscar configuração de limite de colaboradores
+router.get('/configuracoes/limite-colaboradores', authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    let limiteMaximo = 1000;
+    let descricao = 'Número máximo de colaboradores por empresa';
+
+    if (typeof configuracoesSistema !== 'undefined') {
+      const [configLimite] = await db
+        .select()
+        .from(configuracoesSistema)
+        .where(eq(configuracoesSistema.chave, 'max_colaboradores_por_empresa'))
+        .limit(1);
+
+      if (configLimite) {
+        limiteMaximo = parseInt((configLimite as any).valor) || 1000;
+        descricao = (configLimite as any).descricao || descricao;
+      }
+    }
+
+    res.json({ limiteMaximo, descricao });
+  } catch (error) {
+    console.error('Erro ao buscar configuração de limite:', error);
+    res.status(500).json({ 
+      error: 'Erro ao buscar configuração',
+      limiteMaximo: 1000
+    });
   }
 });
 

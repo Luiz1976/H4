@@ -17,22 +17,30 @@ function sanitizeDatabaseUrl(raw?: string): string | null {
   }
 }
 
+const isProduction = process.env.NODE_ENV === 'production';
 let dbUrl = sanitizeDatabaseUrl(process.env.DATABASE_URL);
 
-if (!dbUrl) {
-  console.warn('⚠️  DATABASE_URL inválida ou não definida. Operações de banco podem falhar.');
-  // Para desenvolvimento, usar um mock local; em produção, falhar cedo via logs
-  if (process.env.NODE_ENV !== 'production') {
-    dbUrl = 'postgresql://localhost:5432/mock_db';
-  } else {
-    throw new Error('DATABASE_URL inválida. Remova prefixo "psql" e aspas, ex: postgresql://user:pass@host/db?sslmode=require');
-  }
+if (!dbUrl && isProduction) {
+  throw new Error('DATABASE_URL inválida. Remova prefixo "psql" e aspas, ex: postgresql://user:pass@host/db?sslmode=require');
 }
 
-export const client = postgres(dbUrl, {
-  max: 20,
-  idle_timeout: 20,
-  connect_timeout: 10,
-});
+let client: any;
+let db: any;
 
-export const db = drizzle(client, { schema });
+// Em desenvolvimento, quando DATABASE_URL estiver ausente/inválida, usar SQLite local
+if (!dbUrl && !isProduction) {
+  console.warn('⚠️  DATABASE_URL ausente/invalidada em dev. Usando SQLite local.');
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const sqliteModule = require('../server/db-sqlite');
+  db = sqliteModule.db;
+  client = null;
+} else {
+  client = postgres(dbUrl!, {
+    max: 20,
+    idle_timeout: 20,
+    connect_timeout: 10,
+  });
+  db = drizzle(client, { schema });
+}
+
+export { db, client };

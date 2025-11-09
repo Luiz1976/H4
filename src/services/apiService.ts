@@ -18,6 +18,8 @@ interface ApiResponse<T> {
 interface ConviteEmpresa {
   nomeEmpresa: string;
   emailContato: string;
+  telefone?: string;
+  numeroColaboradores?: number;
   diasValidade?: number;
 }
 
@@ -41,6 +43,11 @@ interface ConviteResponse {
   validade: string;
   status: string;
   linkConvite?: string;
+  // Datas opcionais retornadas pelo backend
+  createdAt?: string;
+  created_at?: string;
+  // Configuração de acesso (apenas convites de empresa)
+  diasAcesso?: number;
 }
 
 function getAuthToken(): string | null {
@@ -151,10 +158,14 @@ class ApiService {
   }
 
   // Aceitar convite de empresa
-  async aceitarConviteEmpresa(token: string, senha: string): Promise<{ message: string; empresa: any }> {
+  async aceitarConviteEmpresa(
+    token: string,
+    senha: string,
+    logoBase64?: string
+  ): Promise<{ message: string; empresa: any }> {
     return this.makeRequest(`/api/convites/empresa/aceitar/${token}`, {
       method: 'POST',
-      body: JSON.stringify({ senha }),
+      body: JSON.stringify({ senha, logoBase64 }),
     });
   }
 
@@ -259,6 +270,15 @@ class ApiService {
   }
   async obterDashboardAdmin(): Promise<any> {
     return this.makeRequest('/api/admin/dashboard');
+  }
+
+  async obterConfiguracaoLimiteColaboradores(): Promise<{ limiteMaximo: number }> {
+    try {
+      return await this.makeRequest('/api/configuracoes/limite-colaboradores');
+    } catch (error) {
+      console.error('Erro ao buscar configuração de limite:', error);
+      return { limiteMaximo: 1000 };
+    }
   }
 }
 

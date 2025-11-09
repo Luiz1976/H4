@@ -44,8 +44,9 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 5001
-externalPort = 3003
+# Removido mapeamento da porta 5001 para evitar uso do frontend nessa porta
+# Caso algum serviço precise dessa porta futuramente, adicionar explicitamente aqui.
+
 
 [[ports]]
 localPort = 5002

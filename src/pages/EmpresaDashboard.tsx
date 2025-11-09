@@ -24,7 +24,7 @@ const EmpresaDashboard: React.FC = () => {
         <Route path="/gerar-convite" element={<EmpresaGerarConvite />} />
         <Route path="/resultados" element={<EmpresaResultados />} />
         <Route path="/estado-psicossocial" element={<EmpresaEstadoPsicossocial />} />
-        <Route path="/prg" element={<EmpresaPRG />} />
+        <Route path="/pgr" element={<EmpresaPRG />} />
       </Routes>
     </EmpresaLayout>
   );

@@ -17,7 +17,6 @@ import {
   ArrowRight,
   Shield,
   Calendar,
-  ExternalLink,
   Eye,
   EyeOff,
   Key,
@@ -52,6 +51,7 @@ interface EmpresaSenhaData {
   email: string;
   senha: string;
   confirmarSenha: string;
+  logoBase64?: string;
 }
 
 const AcessoConvite = () => {
@@ -75,10 +75,11 @@ const AcessoConvite = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [conviteValido, setConviteValido] = useState<boolean | null>(null);
-  const [etapaAtual, setEtapaAtual] = useState<'validacao' | 'dados' | 'cadastro-senha' | 'confirmacao'>('validacao');
+  const [etapaAtual, setEtapaAtual] = useState<'validacao' | 'form' | 'confirmacao'>('validacao');
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [mostrarConfirmarSenha, setMostrarConfirmarSenha] = useState(false);
   const [errosValidacao, setErrosValidacao] = useState<string[]>([]);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   // Validar convite usando dados reais
   useEffect(() => {
@@ -92,13 +93,9 @@ const AcessoConvite = () => {
             const conviteEmpresa = await apiService.buscarConvitePorToken(codigoConvite, 'empresa');
             setConviteInfo(conviteEmpresa);
             setConviteValido(true);
-            setEtapaAtual('dados');
+            setEtapaAtual('form');
             
-            // Pré-preencher email para cadastro de senha
-            setEmpresaSenhaData(prev => ({
-              ...prev,
-              email: conviteEmpresa.emailContato || conviteEmpresa.email || ''
-            }));
+            // Removido: não pré-preencher o e-mail da empresa
           } catch (error) {
             // Se não encontrar como empresa, tenta como colaborador
             try {
@@ -134,23 +131,51 @@ const AcessoConvite = () => {
     }
   }, [codigoConvite, navigate]);
 
-  const handleSubmitDados = async (e: React.FormEvent) => {
+  // Submit único do formulário: dados + senha + logo
+  const handleSubmitForm = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrosValidacao([]);
 
     try {
-      // Simular validação e registro dos dados
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Avançar para etapa de cadastro de senha
-      setEtapaAtual('cadastro-senha');
-      
-      toast.success("Dados registrados com sucesso!", {
-        description: "Agora configure a senha de acesso da empresa"
+      // Validação das senhas
+      if (empresaSenhaData.senha !== empresaSenhaData.confirmarSenha) {
+        setErrosValidacao(['As senhas não coincidem']);
+        return;
+      }
+
+      if (!codigoConvite) {
+        toast.error('Token de convite inválido');
+        return;
+      }
+
+      // Campos obrigatórios do colaborador
+      const camposObrigatorios = [
+        colaboradorData.nome,
+        colaboradorData.email,
+        colaboradorData.cargo,
+        colaboradorData.departamento,
+      ];
+      if (camposObrigatorios.some((v) => !v || !String(v).trim())) {
+        toast.error('Preencha todos os campos obrigatórios.');
+        return;
+      }
+
+      // Aceitar convite (senha + logo)
+      await apiService.aceitarConviteEmpresa(
+        codigoConvite,
+        empresaSenhaData.senha,
+        empresaSenhaData.logoBase64
+      );
+
+      setEtapaAtual('confirmacao');
+      toast.success('Empresa cadastrada com sucesso!', {
+        description: 'Você pode agora fazer login com suas credenciais',
       });
     } catch (error) {
-      toast.error("Erro ao registrar dados", {
-        description: "Verifique as informações e tente novamente"
+      setErrosValidacao(['Erro interno do servidor']);
+      toast.error('Erro ao cadastrar empresa', {
+        description: 'Tente novamente em alguns instantes',
       });
     } finally {
       setIsSubmitting(false);
@@ -174,8 +199,12 @@ const AcessoConvite = () => {
         return;
       }
 
-      // Aceitar convite usando a API
-      await apiService.aceitarConviteEmpresa(codigoConvite, empresaSenhaData.senha);
+      // Aceitar convite usando a API (inclui logo se existir)
+      await apiService.aceitarConviteEmpresa(
+        codigoConvite,
+        empresaSenhaData.senha,
+        empresaSenhaData.logoBase64
+      );
 
       setEtapaAtual('confirmacao');
       toast.success("Empresa cadastrada com sucesso!", {
@@ -189,6 +218,30 @@ const AcessoConvite = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleLogoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Validar tipos básicos
+    const validTypes = ['image/png', 'image/jpeg', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Formato de logo inválido. Use PNG, JPG ou GIF.');
+      return;
+    }
+    // Converter para base64 para envio simples ao backend
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setEmpresaSenhaData(prev => ({ ...prev, logoBase64: result }));
+      setLogoPreview(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removerLogo = () => {
+    setEmpresaSenhaData(prev => ({ ...prev, logoBase64: undefined }));
+    setLogoPreview(null);
   };
 
   const iniciarTestes = () => {
@@ -315,20 +368,20 @@ const AcessoConvite = () => {
           </Card>
         )}
 
-        {/* Etapa: Dados do Colaborador */}
-        {etapaAtual === 'dados' && (
+        {/* Formulário Único: Dados + Senha + Logo */}
+        {etapaAtual === 'form' && (
           <Card className="shadow-lg">
             <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
               <CardTitle className="flex items-center gap-2">
                 <Mail className="h-5 w-5" />
-                Seus Dados
+                Cadastro da Empresa e Seus Dados
               </CardTitle>
               <CardDescription>
-                Preencha suas informações para acessar os testes psicossociais
+                Preencha todos os campos para concluir seu acesso
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
-              <form onSubmit={handleSubmitDados} className="space-y-6">
+              <form onSubmit={handleSubmitForm} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="nome">Nome Completo *</Label>
@@ -378,52 +431,36 @@ const AcessoConvite = () => {
 
                 <Separator />
 
-                <Alert>
-                  <Shield className="h-4 w-4" />
-                  <AlertDescription>
-                    <strong>Privacidade garantida:</strong> Seus dados são protegidos e utilizados apenas para fins de análise psicossocial. 
-                    Os resultados são confidenciais e seguem as normas da LGPD.
-                  </AlertDescription>
-                </Alert>
+                {/* Upload de Logo da Empresa (opcional) */}
+                <div className="space-y-2">
+                  <Label htmlFor="logo-empresa">Logo da Empresa (opcional)</Label>
+                  <div className="flex items-center gap-4">
+                    <Input
+                      id="logo-empresa"
+                      type="file"
+                      accept="image/png, image/jpeg, image/gif"
+                      onChange={handleLogoFileChange}
+                    />
+                    {logoPreview && (
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={logoPreview}
+                          alt="Preview do logo"
+                          className="h-12 w-12 rounded-md object-cover border"
+                        />
+                        <Button type="button" variant="outline" onClick={removerLogo}>
+                          Remover
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Formatos aceitos: PNG, JPG, GIF. Tamanho recomendado: 256x256.
+                  </p>
+                </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={isSubmitting}
-                  size="lg"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Registrando Dados...
-                    </>
-                  ) : (
-                    <>
-                      Confirmar e Continuar
-                      <ArrowRight className="h-4 w-4 ml-2" />
-                    </>
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Etapa: Cadastro de Senha da Empresa */}
-        {etapaAtual === 'cadastro-senha' && (
-          <Card className="shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
-              <CardTitle className="flex items-center gap-2">
-                <Key className="h-5 w-5" />
-                Cadastro de Senha da Empresa
-              </CardTitle>
-              <CardDescription>
-                Configure uma senha segura para que sua empresa possa acessar o sistema
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6">
-              <form onSubmit={handleSubmitSenha} className="space-y-6">
-                <div className="space-y-4">
+                {/* Campos de Senha */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="email-empresa">E-mail da Empresa</Label>
                     <Input
@@ -443,27 +480,25 @@ const AcessoConvite = () => {
                     <div className="relative">
                       <Input
                         id="senha"
-                        type={mostrarSenha ? "text" : "password"}
+                        type={mostrarSenha ? 'text' : 'password'}
                         value={empresaSenhaData.senha}
                         onChange={(e) => setEmpresaSenhaData(prev => ({ ...prev, senha: e.target.value }))}
                         placeholder="Digite uma senha segura"
                         required
-                        className="pr-10"
                       />
                       <Button
                         type="button"
                         variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setMostrarSenha(!mostrarSenha)}
+                        className="absolute right-1 top-1 h-8 w-8"
+                        onClick={() => setMostrarSenha((v) => !v)}
+                        aria-label="Mostrar/ocultar senha"
                       >
-                        {mostrarSenha ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
+                        {mostrarSenha ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
+                    <p className="text-xs text-muted-foreground">
+                      Use no mínimo 8 caracteres e misture letras, números e símbolos.
+                    </p>
                   </div>
 
                   <div className="space-y-2">
@@ -471,58 +506,32 @@ const AcessoConvite = () => {
                     <div className="relative">
                       <Input
                         id="confirmar-senha"
-                        type={mostrarConfirmarSenha ? "text" : "password"}
+                        type={mostrarConfirmarSenha ? 'text' : 'password'}
                         value={empresaSenhaData.confirmarSenha}
                         onChange={(e) => setEmpresaSenhaData(prev => ({ ...prev, confirmarSenha: e.target.value }))}
-                        placeholder="Digite a senha novamente"
+                        placeholder="Repita a senha"
                         required
-                        className="pr-10"
                       />
                       <Button
                         type="button"
                         variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setMostrarConfirmarSenha(!mostrarConfirmarSenha)}
+                        className="absolute right-1 top-1 h-8 w-8"
+                        onClick={() => setMostrarConfirmarSenha((v) => !v)}
+                        aria-label="Mostrar/ocultar senha"
                       >
-                        {mostrarConfirmarSenha ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
+                        {mostrarConfirmarSenha ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
                   </div>
                 </div>
 
-                <Separator />
-
                 <Alert>
-                  <Lock className="h-4 w-4" />
+                  <Shield className="h-4 w-4" />
                   <AlertDescription>
-                    <strong>Critérios de Segurança:</strong>
-                    <ul className="mt-2 space-y-1 text-sm">
-                      <li>• Mínimo de 8 caracteres</li>
-                      <li>• Pelo menos uma letra maiúscula</li>
-                      <li>• Pelo menos uma letra minúscula</li>
-                      <li>• Pelo menos um número</li>
-                      <li>• Pelo menos um símbolo especial (!@#$%^&*)</li>
-                    </ul>
+                    <strong>Privacidade garantida:</strong> Seus dados são protegidos e utilizados apenas para fins de análise psicossocial. 
+                    Os resultados são confidenciais e seguem as normas da LGPD.
                   </AlertDescription>
                 </Alert>
-
-                {errosValidacao.length > 0 && (
-                  <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription>
-                      <ul className="space-y-1">
-                        {errosValidacao.map((erro, index) => (
-                          <li key={index}>• {erro}</li>
-                        ))}
-                      </ul>
-                    </AlertDescription>
-                  </Alert>
-                )}
 
                 <Button 
                   type="submit" 
@@ -533,11 +542,11 @@ const AcessoConvite = () => {
                   {isSubmitting ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Cadastrando Empresa...
+                      Processando cadastro...
                     </>
                   ) : (
                     <>
-                      Cadastrar Empresa
+                      Concluir Cadastro
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </>
                   )}
@@ -546,6 +555,8 @@ const AcessoConvite = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Etapa única implementada acima */}
 
         {/* Etapa: Confirmação e Acesso aos Testes */}
         {etapaAtual === 'confirmacao' && (
@@ -600,16 +611,6 @@ const AcessoConvite = () => {
                   >
                     <Key className="h-4 w-4 mr-2" />
                     Fazer Login da Empresa
-                  </Button>
-                  
-                  <Button 
-                    onClick={iniciarTestes}
-                    variant="outline"
-                    size="lg"
-                    className="px-8"
-                  >
-                    Continuar com os Testes
-                    <ExternalLink className="h-4 w-4 ml-2" />
                   </Button>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Building2, 
@@ -7,7 +7,8 @@ import {
   MoreVertical, 
   Search, 
   Filter,
-  UserPlus
+  UserPlus,
+  Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { authService } from '@/services/authService';
@@ -26,6 +27,8 @@ interface Empresa {
 interface NovoConvite {
   email: string;
   nome: string;
+  telefone: string;
+  numero_colaboradores: number;
   dias_expiracao: number;
 }
 
@@ -38,8 +41,26 @@ export default function AdminEmpresas() {
   const [novoConvite, setNovoConvite] = useState<NovoConvite>({
     email: '',
     nome: '',
+    telefone: '',
+    numero_colaboradores: 50,
     dias_expiracao: 7
   });
+  const [limiteColaboradores, setLimiteColaboradores] = useState(1000);
+  const firstInputRef = useRef<HTMLInputElement>(null);
+
+  // Foco inicial e fechar com ESC quando o modal estiver aberto
+  useEffect(() => {
+    if (showConviteModal) {
+      firstInputRef.current?.focus();
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          setShowConviteModal(false);
+        }
+      };
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [showConviteModal]);
 
   useEffect(() => {
     carregarEmpresas();
@@ -68,14 +89,27 @@ export default function AdminEmpresas() {
 
   const criarConviteEmpresa = async () => {
     try {
-      if (!novoConvite.email || !novoConvite.nome) {
-        toast.error('Email e nome são obrigatórios');
+      // Validações
+      if (!novoConvite.email || !novoConvite.nome || !novoConvite.numero_colaboradores) {
+        toast.error('Nome, email e quantidade de colaboradores são obrigatórios');
+        return;
+      }
+
+      if (novoConvite.numero_colaboradores < 1) {
+        toast.error('Quantidade de colaboradores deve ser maior que zero');
+        return;
+      }
+
+      if (novoConvite.numero_colaboradores > limiteColaboradores) {
+        toast.error(`Quantidade de colaboradores não pode exceder ${limiteColaboradores.toLocaleString()}`);
         return;
       }
 
       const convite = await apiService.criarConviteEmpresa({
         nomeEmpresa: novoConvite.nome,
         emailContato: novoConvite.email,
+        telefone: novoConvite.telefone,
+        numeroColaboradores: novoConvite.numero_colaboradores,
         diasValidade: novoConvite.dias_expiracao
       });
 
@@ -90,7 +124,7 @@ export default function AdminEmpresas() {
       toast.info('URL do convite copiada para a área de transferência');
       
       setShowConviteModal(false);
-      setNovoConvite({ email: '', nome: '', dias_expiracao: 7 });
+      setNovoConvite({ email: '', nome: '', telefone: '', numero_colaboradores: 50, dias_expiracao: 7 });
       
       // Redirecionar para a página de convites
       navigate('/admin/convites');
@@ -102,6 +136,27 @@ export default function AdminEmpresas() {
 
   const formatarData = (data: string) => {
     return new Date(data).toLocaleDateString('pt-BR');
+  };
+
+  const confirmarExclusao = async (empresa: Empresa) => {
+    const ok = window.confirm(`Tem certeza que deseja excluir permanentemente a empresa "${empresa.nome_empresa}"? Esta ação não pode ser desfeita.`);
+    if (!ok) return;
+
+    try {
+      // Executar exclusão
+      const { authServiceNew } = await import('@/services/authServiceNew');
+      const resp = await authServiceNew.excluirEmpresa(empresa.id);
+      if (resp.success) {
+        toast.success('Empresa excluída com sucesso');
+        // Atualizar lista local sem reconsultar
+        setEmpresas(prev => prev.filter(e => e.id !== empresa.id));
+      } else {
+        toast.error(resp.message || 'Falha ao excluir empresa');
+      }
+    } catch (error) {
+      console.error('Erro ao excluir empresa:', error);
+      toast.error('Erro ao excluir empresa');
+    }
   };
 
   const empresasFiltradas = empresas.filter(empresa => {
@@ -124,7 +179,16 @@ export default function AdminEmpresas() {
           <p className="text-gray-600">Gerencie todas as empresas cadastradas no sistema</p>
         </div>
         <button
-          onClick={() => setShowConviteModal(true)}
+          onClick={async () => {
+            try {
+              const config = await apiService.obterConfiguracaoLimiteColaboradores();
+              setLimiteColaboradores(config.limiteMaximo);
+            } catch (error) {
+              console.error('Erro ao buscar configuração de limite:', error);
+              setLimiteColaboradores(1000); // Valor padrão
+            }
+            setShowConviteModal(true);
+          }}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
         >
           <UserPlus className="w-4 h-4" />
@@ -243,6 +307,14 @@ export default function AdminEmpresas() {
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
+                        onClick={() => confirmarExclusao(empresa)}
+                        className="text-red-600 hover:text-red-800"
+                        title="Excluir permanentemente"
+                        data-testid={`button-excluir-${empresa.id}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      <button
                         className="text-gray-400 hover:text-gray-600"
                         title="Mais opções"
                       >
@@ -271,44 +343,78 @@ export default function AdminEmpresas() {
 
       {/* Modal de Convite */}
       {showConviteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Convidar Nova Empresa</h3>
-            
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="admin-convite-title"
+          aria-describedby="admin-convite-desc"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowConviteModal(false); }}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl w-full max-w-[92vw] sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl p-4 sm:p-6 transition-all duration-300 ease-out max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="admin-convite-title" className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">Convidar Nova Empresa</h3>
+            <p id="admin-convite-desc" className="text-sm text-gray-500 mb-4">Preencha os dados para criar um convite de acesso.</p>
+
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nome da Empresa
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nome da Empresa</label>
                 <input
+                  ref={firstInputRef}
                   type="text"
                   value={novoConvite.nome}
-                  onChange={(e) => setNovoConvite({...novoConvite, nome: e.target.value})}
+                  onChange={(e) => setNovoConvite({ ...novoConvite, nome: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Digite o nome da empresa"
                 />
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email de Contato
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email de Contato</label>
                 <input
                   type="email"
                   value={novoConvite.email}
-                  onChange={(e) => setNovoConvite({...novoConvite, email: e.target.value})}
+                  onChange={(e) => setNovoConvite({ ...novoConvite, email: e.target.value })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="email@empresa.com"
                 />
               </div>
-              
+
+              {/* Telefone de Contato */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Dias para Expiração
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Telefone de Contato</label>
+                <input
+                  type="tel"
+                  value={novoConvite.telefone}
+                  onChange={(e) => setNovoConvite({ ...novoConvite, telefone: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="(00) 00000-0000"
+                />
+              </div>
+
+              {/* Quantidade Total de Colaboradores */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Quantidade Total de Colaboradores * (Máx: {limiteColaboradores.toLocaleString()})</label>
+                <input
+                  type="number"
+                  min="1"
+                  max={limiteColaboradores}
+                  value={novoConvite.numero_colaboradores}
+                  onChange={(e) => setNovoConvite({ ...novoConvite, numero_colaboradores: parseInt(e.target.value) || 1 })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder={`Digite o número total de colaboradores (máx: ${limiteColaboradores.toLocaleString()})`}
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">Limite máximo de colaboradores por empresa: {limiteColaboradores.toLocaleString()}</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Dias para Expiração</label>
                 <select
                   value={novoConvite.dias_expiracao}
-                  onChange={(e) => setNovoConvite({...novoConvite, dias_expiracao: parseInt(e.target.value)})}
+                  onChange={(e) => setNovoConvite({ ...novoConvite, dias_expiracao: parseInt(e.target.value) })}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value={3}>3 dias</option>
@@ -318,17 +424,17 @@ export default function AdminEmpresas() {
                 </select>
               </div>
             </div>
-            
-            <div className="flex justify-end space-x-3 mt-6">
+
+            <div className="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
               <button
                 onClick={() => setShowConviteModal(false)}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-4 py-3 sm:py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
               >
                 Cancelar
               </button>
               <button
                 onClick={criarConviteEmpresa}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="px-4 py-3 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
               >
                 Criar Convite
               </button>

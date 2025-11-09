@@ -20,7 +20,8 @@ interface GraficoRadarDimensoesProps {
 export default function GraficoRadarDimensoes({ dados }: GraficoRadarDimensoesProps) {
   const [searchTerm, setSearchTerm] = useState("");
   
-  console.log(`📊 [Radar Chart] Renderizando com ${dados.length} dimensões REAIS:`, dados.slice(0, 5).map(d => `${d.dimensao}: ${d.valor}%`));
+  const totalDimensoes = Array.isArray(dados) ? dados.length : 0;
+  console.log(`📊 [Radar Chart] Renderizando com ${totalDimensoes} dimensões REAIS:`, dados.slice(0, 5).map(d => `${d.dimensao}: ${d.valor}%`));
   
   // Top 10 dimensões mais críticas (menor gap em relação à meta)
   const dimensoesCriticas = [...dados]
@@ -33,9 +34,10 @@ export default function GraficoRadarDimensoes({ dados }: GraficoRadarDimensoesPr
   );
 
   // Calcular estatísticas
-  const mediaGeral = dados.reduce((acc, d) => acc + d.valor, 0) / dados.length;
-  const abaixoDaMeta = dados.filter(d => d.valor < d.meta).length;
-  const acimaDaMeta = dados.filter(d => d.valor >= d.meta).length;
+  const somaValores = dados.reduce((acc, d) => acc + (isNaN(Number(d.valor)) ? 0 : Number(d.valor)), 0);
+  const mediaGeral = totalDimensoes > 0 ? somaValores / totalDimensoes : 0;
+  const abaixoDaMeta = totalDimensoes > 0 ? dados.filter(d => (Number(d.valor) || 0) < (Number(d.meta) || 0)).length : 0;
+  const acimaDaMeta = totalDimensoes > 0 ? dados.filter(d => (Number(d.valor) || 0) >= (Number(d.meta) || 0)).length : 0;
 
   // Função para obter cor baseada no gap
   const getCorPorGap = (valor: number, meta: number) => {
@@ -59,7 +61,7 @@ export default function GraficoRadarDimensoes({ dados }: GraficoRadarDimensoesPr
         <div className="grid grid-cols-3 gap-3 mt-3">
           <div className="bg-white/10 rounded-lg p-3 backdrop-blur">
             <div className="text-white/60 text-xs">Média Geral</div>
-            <div className="text-white text-2xl font-bold">{mediaGeral.toFixed(1)}%</div>
+            <div className="text-white text-2xl font-bold">{Number.isFinite(mediaGeral) ? mediaGeral.toFixed(1) : '0.0'}%</div>
           </div>
           <div className="bg-green-500/20 rounded-lg p-3 backdrop-blur border border-green-500/30">
             <div className="text-green-200 text-xs flex items-center gap-1">

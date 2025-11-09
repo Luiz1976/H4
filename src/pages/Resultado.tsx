@@ -30,21 +30,20 @@ export default function Resultado() {
     try {
       setCarregando(true);
       const response = await apiService.obterResultadoPorId(resultadoId);
-      const dadosCompletos = response.resultado;
       
-      console.log('✅ [Resultado] Dados recebidos:', dadosCompletos);
-
-      if (!dadosCompletos) {
-        setErro("Resultado não encontrado");
-        return;
+      if (!response?.resultado) {
+        throw new Error("Resultado não encontrado na resposta da API");
       }
 
+      const dadosCompletos: DadosResultadoAPI = response.resultado;
+      console.log('✅ [Resultado] Dados recebidos:', dadosCompletos);
+
       // Preparar objeto resultado simplificado para ResultadoVisualizacao
-      const resultadoSimples = {
+      const resultadoSimples: ResultadoTeste = {
         id: dadosCompletos.id || resultadoId,
         nomeTest: dadosCompletos.metadados?.teste_nome || 
                   dadosCompletos.testes?.nome || 
-                  'Resultado do Teste',
+                  obterNomeTestePorTipo(dadosCompletos.metadados?.tipo_teste),
         categoria: dadosCompletos.testes?.categoria || '',
         pontuacao: dadosCompletos.pontuacao_total || 0,
         nivel: dadosCompletos.metadados?.classificacaoGeral || '',
@@ -57,7 +56,13 @@ export default function Resultado() {
 
     } catch (error) {
       console.error('❌ [Resultado] Erro ao carregar:', error);
-      setErro("Erro ao carregar resultado. Tente novamente.");
+      const mensagemErro = error instanceof Error ? error.message : 'Erro ao carregar resultado';
+      setErro(mensagemErro);
+      toast({
+        title: "Erro",
+        description: mensagemErro,
+        variant: "destructive",
+      });
     } finally {
       setCarregando(false);
     }

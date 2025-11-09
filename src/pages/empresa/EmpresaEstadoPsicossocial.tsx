@@ -412,7 +412,7 @@ export default function EmpresaEstadoPsicossocial() {
             <CardContent className="p-6 relative">
               <div className="flex items-start justify-between mb-4">
                 <div className="p-3 bg-purple-500/20 rounded-xl backdrop-blur-xl border border-purple-500/30">
-                  Ⓛh-6 w-6 text-purple-300Ⓛ
+                  <Star className="h-6 w-6 text-purple-300" />
                 </div>
                 <Sparkles className="h-5 w-5 text-purple-400 animate-pulse" />
               </div>

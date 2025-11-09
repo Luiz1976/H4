@@ -11,99 +11,28 @@ import { obterTodasPerguntasHumaniQInsight } from "@/lib/testes/humaniq-insight"
 import { processamentoService, respostasService } from "@/lib/database";
 import { numeroParaLetra } from "@/lib/utils";
 import ProcessingAnimation from "@/components/ProcessingAnimation";
+import { apiService } from "@/services/apiService";
 
-// Mock data das perguntas - em produção viria do backend baseado no teste
-const perguntasMock = {
-  "big-five": [
-    {
-      id: 1,
-      texto: "Eu me vejo como alguém que é original, com novas ideias",
-      categoria: "Abertura",
-      escala: ["Discordo totalmente", "Discordo", "Neutro", "Concordo", "Concordo totalmente"]
-    },
-    {
-      id: 2,
-      texto: "Eu me vejo como alguém que faz um trabalho completo",
-      categoria: "Conscienciosidade",
-      escala: ["Discordo totalmente", "Discordo", "Neutro", "Concordo", "Concordo totalmente"]
-    },
-    {
-      id: 3,
-      texto: "Eu me vejo como alguém que é falante, comunicativo",
-      categoria: "Extroversão",
-      escala: ["Discordo totalmente", "Discordo", "Neutro", "Concordo", "Concordo totalmente"]
-    },
-    {
-      id: 4,
-      texto: "Eu me vejo como alguém que é prestativo e não egoísta com os outros",
-      categoria: "Amabilidade", 
-      escala: ["Discordo totalmente", "Discordo", "Neutro", "Concordo", "Concordo totalmente"]
-    },
-    {
-      id: 5,
-      texto: "Eu me vejo como alguém que se preocupa muito",
-      categoria: "Neuroticismo",
-      escala: ["Discordo totalmente", "Discordo", "Neutro", "Concordo", "Concordo totalmente"]
-    }
-  ],
-  "inteligencia-emocional": [
-    {
-      id: 1,
-      texto: "Eu consigo identificar facilmente minhas emoções quando elas surgem",
-      categoria: "Autoconsciência",
-      escala: ["Nunca", "Raramente", "Às vezes", "Frequentemente", "Sempre"]
-    },
-    {
-      id: 2,
-      texto: "Eu consigo controlar minhas emoções quando necessário",
-      categoria: "Autorregulação",
-      escala: ["Nunca", "Raramente", "Às vezes", "Frequentemente", "Sempre"]
-    },
-    {
-      id: 3,
-      texto: "Eu percebo facilmente as emoções das outras pessoas",
-      categoria: "Empatia",
-      escala: ["Nunca", "Raramente", "Às vezes", "Frequentemente", "Sempre"]
-    }
-  ],
-  "clima-organizacional": obterTodasPerguntas().map(pergunta => ({
-    id: pergunta.id,
-    texto: pergunta.texto,
-    categoria: pergunta.dimensao,
-    escala: ["Discordo totalmente", "Discordo", "Neutro", "Concordo", "Concordo totalmente"]
-  })),
-  "karasek-siegrist": obterTodasPerguntasKS().map(pergunta => ({
-    id: pergunta.id,
-    texto: pergunta.texto,
-    categoria: pergunta.dimensao,
-    escala: pergunta.escala
-  })),
-  "humaniq-insight": obterTodasPerguntasHumaniQInsight().map(pergunta => ({
-    id: pergunta.id,
-    texto: pergunta.texto,
-    categoria: pergunta.dimensao,
-    escala: ["Discordo totalmente", "Discordo", "Neutro", "Concordo", "Concordo totalmente"]
-  }))
-};
+// Interface para perguntas vindas da API
+interface PerguntaAPI {
+  id: number;
+  texto: string;
+  categoria: string;
+  escala: string[];
+}
 
 export default function TestePerguntas() {
-  const { testeId: testeIdParam } = useParams();
+  const { testeId } = useParams<{ testeId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Extrair testeId dos parâmetros ou do pathname
-  const pathname = window.location.pathname;
-  const testeIdFromPath = pathname.includes('/humaniq-insight/') ? 'humaniq-insight' 
-    : pathname.includes('/clima-organizacional/') ? 'clima-organizacional'
-    : pathname.includes('/karasek-siegrist/') ? 'karasek-siegrist'
-    : testeIdParam;
-  
-  const testeId = testeIdFromPath || testeIdParam;
-  const perguntas = perguntasMock[testeId as keyof typeof perguntasMock] || [];
+  const [perguntas, setPerguntas] = useState<PerguntaAPI[]>([]);
   const [perguntaAtual, setPerguntaAtual] = useState(0);
-  const [respostas, setRespostas] = useState<Record<number, number>>({});
+  const [respostas, setRespostas] = useState<{ [key: number]: number }>({});
   const [processandoTeste, setProcessandoTeste] = useState(false);
   const [tempoInicio] = useState(Date.now());
+  const [carregando, setCarregando] = useState(true);
+  const [erroCarregamento, setErroCarregamento] = useState<string | null>(null);
   
   // Estados para controle do avanço automático
   const [salvandoResposta, setSalvandoResposta] = useState(false);
@@ -117,14 +46,118 @@ export default function TestePerguntas() {
   
   // Estado para controlar a animação de processamento
   const [mostrarAnimacaoProcessamento, setMostrarAnimacaoProcessamento] = useState(false);
+
+  // Buscar perguntas da API ao montar o componente
+  useEffect(() => {
+    const carregarPerguntas = async () => {
+      if (!testeId) {
+        setErroCarregamento('ID do teste não fornecido');
+        setCarregando(false);
+        return;
+      }
+
+      try {
+        setCarregando(true);
+        setErroCarregamento(null);
+        
+        const response = await apiService.obterPerguntasTeste(testeId);
+        
+        if (response && response.perguntas && Array.isArray(response.perguntas)) {
+          // Mapear perguntas da API para o formato esperado
+          const perguntasMapeadas: PerguntaAPI[] = response.perguntas.map((pergunta: any) => ({
+            id: pergunta.id,
+            texto: pergunta.texto,
+            categoria: pergunta.categoria || pergunta.dimensao || 'Geral',
+            escala: pergunta.escala || ["Discordo totalmente", "Discordo", "Neutro", "Concordo", "Concordo totalmente"]
+          }));
+          
+          setPerguntas(perguntasMapeadas);
+          
+          if (perguntasMapeadas.length === 0) {
+            setErroCarregamento('Nenhuma pergunta encontrada para este teste');
+          }
+        } else {
+          throw new Error('Formato de resposta inválido da API');
+        }
+      } catch (error) {
+        console.error('Erro ao carregar perguntas:', error);
+        setErroCarregamento('Erro ao carregar perguntas do teste. Por favor, tente novamente.');
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar as perguntas do teste.",
+          variant: "destructive",
+        });
+      } finally {
+        setCarregando(false);
+      }
+    };
+
+    carregarPerguntas();
+  }, [testeId, toast]);
   
+  // Mostrar estados de carregamento, erro ou vazio
+  if (carregando) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="max-w-md w-full mx-4">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <Loader2 className="mx-auto h-12 w-12 text-blue-500 mb-4 animate-spin" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Carregando perguntas...
+              </h3>
+              <p className="text-gray-600">
+                Aguarde enquanto carregamos as perguntas do teste.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (erroCarregamento) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="max-w-md w-full mx-4">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Erro ao carregar teste
+              </h3>
+              <p className="text-gray-600 mb-4">
+                {erroCarregamento}
+              </p>
+              <Button onClick={() => navigate('/testes')} variant="outline">
+                Voltar aos Testes
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!perguntas.length) {
     return (
-      <div className="text-center space-y-4">
-        <h1 className="text-2xl font-bold text-destructive">Teste não encontrado</h1>
-        <Button onClick={() => navigate('/testes')}>
-          Voltar aos Testes
-        </Button>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="max-w-md w-full mx-4">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <AlertCircle className="mx-auto h-12 w-12 text-yellow-500 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Nenhuma pergunta disponível
+              </h3>
+              <p className="text-gray-600 mb-4">
+                O teste "{testeId}" não possui perguntas disponíveis no momento.
+              </p>
+              <Button onClick={() => navigate('/testes')} variant="outline">
+                Voltar aos Testes
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }

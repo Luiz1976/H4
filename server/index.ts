@@ -61,6 +61,20 @@ const limiter = rateLimit({
 });
 
 // Middleware de segurança
+// Executar migrações SQLite automaticamente em desenvolvimento
+if (NODE_ENV !== 'production') {
+  try {
+    // Import dinâmico para evitar carregar em produção
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { runMigrations } = require('./db-sqlite');
+    Promise.resolve(runMigrations()).catch((err: any) => {
+      console.error('❌ Erro ao executar migrações SQLite:', err);
+    });
+  } catch (err) {
+    console.warn('⚠️ Módulo de migrações SQLite não disponível:', err);
+  }
+}
+
 app.use(helmet({
   crossOriginEmbedderPolicy: false,
   contentSecurityPolicy: {
