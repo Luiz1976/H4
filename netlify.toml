@@ -1,0 +1,29 @@
+[build]
+  base = "H4"
+  command = "npm install --include=dev && npm run build"
+  publish = "dist"
+
+[build.environment]
+  NETLIFY_USE_NPM = "true"
+  NETLIFY_USE_PNPM = "false"
+  NETLIFY_USE_YARN = "false"
+  NODE_VERSION = "18"
+  NPM_FLAGS = "--include=dev --no-audit --no-fund"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/api/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "no-referrer-when-downgrade"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
