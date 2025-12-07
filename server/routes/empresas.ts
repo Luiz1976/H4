@@ -1214,6 +1214,19 @@ router.get('/estado-psicossocial', authenticateToken, async (req: AuthRequest, r
     const dimensoesAgregadas: Record<string, { total: number; soma: number }> = {};
     const alertasCriticos: string[] = [];
 
+    // Lista de dimensões negativas (onde MENOR é MELHOR)
+    const dimensoesNegativas = new Set([
+      'demanda-psicologica',
+      'esforco-exigido',
+      'hipercomprometimento',
+      'conflito_trabalho_familia',
+      'assedio_violencia',
+      'esgotamento_profissional',
+      'demandas_trabalho',
+      'estresse',
+      'burnout'
+    ]);
+
     // Processar resultados (já ordenados por data decrescente)
     resultadosList.forEach(resultado => {
       const colabId = resultado.colaboradorId;
@@ -1228,19 +1241,28 @@ router.get('/estado-psicossocial', authenticateToken, async (req: AuthRequest, r
           if (!dimensoesAgregadas[dimensaoId]) {
             dimensoesAgregadas[dimensaoId] = { total: 0, soma: 0 };
           }
+
+          let valor = dados.percentual || dados.media || dados.pontuacao || 0;
+
+          // 1. Normalização GLOBAL
+          if (valor <= 5 && !dados.percentual) {
+            valor = (valor / 5) * 100;
+          }
+
+          // 2. Inversão para dimensões negativas
+          if (dimensoesNegativas.has(dimensaoId)) {
+            valor = Math.max(0, 100 - valor);
+          }
+
           dimensoesAgregadas[dimensaoId].total++;
-          dimensoesAgregadas[dimensaoId].soma += dados.percentual || dados.media || dados.pontuacao || 0;
+          dimensoesAgregadas[dimensaoId].soma += valor;
         });
       }
-
-
 
       // Identificar alertas críticos
       if (metadados.alertas_criticos && Array.isArray(metadados.alertas_criticos)) {
         alertasCriticos.push(...metadados.alertas_criticos);
       }
-
-
     });
 
 
@@ -1422,6 +1444,19 @@ router.get('/pgr', authenticateToken, async (req: AuthRequest, res) => {
       totalColaboradores: colaboradoresList.length,
     });
 
+    // Lista de dimensões negativas (onde MENOR é MELHOR)
+    const dimensoesNegativas = new Set([
+      'demanda-psicologica',
+      'esforco-exigido',
+      'hipercomprometimento',
+      'conflito_trabalho_familia',
+      'assedio_violencia',
+      'esgotamento_profissional',
+      'demandas_trabalho',
+      'estresse',
+      'burnout'
+    ]);
+
     // ✨ USAR MESMA LÓGICA DO ESTADO PSICOSSOCIAL - Processar metadados dos testes
     // LÓGICA: Média de TODOS os testes (Histórico Completo)
     const dimensoesAgregadas: Record<string, { total: number; soma: number }> = {};
@@ -1435,25 +1470,32 @@ router.get('/pgr', authenticateToken, async (req: AuthRequest, res) => {
       const metadados = resultado.metadados as Record<string, any> || {};
       const analiseCompleta = metadados.analise_completa || {};
 
-
-
-
-
-      // Identificar alertas críticos (apenas se for teste recente)
       // Identificar alertas críticos
       if (metadados.alertas_criticos && Array.isArray(metadados.alertas_criticos)) {
         alertasCriticos.push(...metadados.alertas_criticos);
       }
 
-      // Agregar dimensões apenas se ainda não foram processadas para este colaborador
       // Agregar dimensões
       if (analiseCompleta.dimensoes) {
         Object.entries(analiseCompleta.dimensoes).forEach(([dimensaoId, dados]: [string, any]) => {
           if (!dimensoesAgregadas[dimensaoId]) {
             dimensoesAgregadas[dimensaoId] = { total: 0, soma: 0 };
           }
+
+          let valor = dados.percentual || dados.media || dados.pontuacao || 0;
+
+          // 1. Normalização GLOBAL (para todos os campos)
+          if (valor <= 5 && !dados.percentual) {
+            valor = (valor / 5) * 100;
+          }
+
+          // 2. Inversão para dimensões negativas
+          if (dimensoesNegativas.has(dimensaoId)) {
+            valor = Math.max(0, 100 - valor);
+          }
+
           dimensoesAgregadas[dimensaoId].total++;
-          dimensoesAgregadas[dimensaoId].soma += dados.percentual || dados.media || dados.pontuacao || 0;
+          dimensoesAgregadas[dimensaoId].soma += valor;
         });
       }
     });
@@ -1938,7 +1980,23 @@ router.get('/pgr/publico/:token', async (req, res) => {
     const dimensoesPorColaborador = new Map<string, Map<string, number>>();
     const alertasCriticos: string[] = [];
 
+    // Lista de dimensões negativas (onde MENOR é MELHOR)
+    const dimensoesNegativas = new Set([
+      'demanda-psicologica',
+      'esforco-exigido',
+      'hipercomprometimento',
+      'conflito_trabalho_familia',
+      'assedio_violencia',
+      'esgotamento_profissional',
+      'demandas_trabalho',
+      'estresse',
+      'burnout'
+    ]);
+
     // Processar metadados dos resultados (EXATAMENTE como rota principal)
+    // LÓGICA: Média de TODOS os testes (Histórico Completo)
+    const dimensoesAgregadas: Record<string, { total: number; soma: number }> = {};
+
     resultadosList.forEach(resultado => {
       const colabId = resultado.colaboradorId;
       if (!colabId) return;
@@ -1946,26 +2004,31 @@ router.get('/pgr/publico/:token', async (req, res) => {
       const metadados = resultado.metadados as Record<string, any> || {};
       const analiseCompleta = metadados.analise_completa || {};
 
-      // LÓGICA: Média de TODOS os testes (Histórico Completo)
-      const dimensoesAgregadas: Record<string, { total: number; soma: number }> = {};
-
-
-
-      // Identificar alertas críticos (apenas se for teste recente)
       // Identificar alertas críticos
       if (metadados.alertas_criticos && Array.isArray(metadados.alertas_criticos)) {
         alertasCriticos.push(...metadados.alertas_criticos);
       }
 
-      // Agregar dimensões apenas se ainda não foram processadas para este colaborador
       // Agregar dimensões
       if (analiseCompleta.dimensoes) {
         Object.entries(analiseCompleta.dimensoes).forEach(([dimensaoId, dados]: [string, any]) => {
           if (!dimensoesAgregadas[dimensaoId]) {
             dimensoesAgregadas[dimensaoId] = { total: 0, soma: 0 };
           }
+          let valor = dados.percentual || dados.media || dados.pontuacao || 0;
+
+          // 1. Normalização GLOBAL
+          if (valor <= 5 && !dados.percentual) {
+            valor = (valor / 5) * 100;
+          }
+
+          // 2. Inversão para dimensões negativas
+          if (dimensoesNegativas.has(dimensaoId)) {
+            valor = Math.max(0, 100 - valor);
+          }
+
           dimensoesAgregadas[dimensaoId].total++;
-          dimensoesAgregadas[dimensaoId].soma += dados.percentual || dados.media || dados.pontuacao || 0;
+          dimensoesAgregadas[dimensaoId].soma += valor;
         });
       }
     });
