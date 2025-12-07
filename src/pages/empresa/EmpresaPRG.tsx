@@ -1610,11 +1610,11 @@ export default function EmpresaPRG() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full overflow-hidden bg-white/10 flex items-center justify-center border border-white/20">
+                  <div className="h-32 w-32 rounded-full overflow-hidden bg-white/10 flex items-center justify-center border border-white/20">
                     {empresaData.logo ? (
-                      <img src={empresaData.logo} alt={`Logo de ${empresaData.nome}`} className="h-full w-full object-contain" />
+                      <img src={empresaData.logo} alt={`Logo de ${empresaData.nome}`} className="h-full w-full object-cover" />
                     ) : (
-                      <Logo size="sm" showText={false} className="h-6 w-6 text-white" />
+                      <Logo size="lg" showText={false} className="h-16 w-16 text-white" />
                     )}
                   </div>
                   <div>
