@@ -1856,164 +1856,163 @@ export default function EmpresaPRG() {
             </p>
           </div>
         </div >
-      </div >
-    </div >
-          </div >
+      </div>
+    </div>
 
     {/* Conteúdo principal da análise */ }
-    < div className = "relative p-8 space-y-6" >
-      {/* Análise Visual Organizada */ }
-  {
-    prgData?.aiAnalysis.sintese ? (
-      <div className="space-y-4">
-        {/* Processar e exibir a análise de forma estruturada */}
-        {(() => {
-          const texto = prgData.aiAnalysis.sintese
-            .replace(/\*\*/g, '') // Remover asteriscos
-            .replace(/\*/g, '');
+  < div className="relative p-8 space-y-6" >
+    {/* Análise Visual Organizada */}
+    {
+      prgData?.aiAnalysis.sintese ? (
+        <div className="space-y-4">
+          {/* Processar e exibir a análise de forma estruturada */}
+          {(() => {
+            const texto = prgData.aiAnalysis.sintese
+              .replace(/\*\*/g, '') // Remover asteriscos
+              .replace(/\*/g, '');
 
-          // Dividir por parágrafos
-          const paragrafos = texto.split('\n\n').filter(p => p.trim());
+            // Dividir por parágrafos
+            const paragrafos = texto.split('\n\n').filter(p => p.trim());
 
-          // Filtrar para remover a seção de "ÁREAS PRIORITÁRIAS PARA INTERVENÇÃO"
-          // pois agora temos um componente visual moderno para isso
-          let pularProximo = false;
+            // Filtrar para remover a seção de "ÁREAS PRIORITÁRIAS PARA INTERVENÇÃO"
+            // pois agora temos um componente visual moderno para isso
+            let pularProximo = false;
 
-          return paragrafos.map((paragrafo, idx) => {
-            // Detectar se é a seção de áreas prioritárias
-            const ehSecaoAreasPrioritarias = paragrafo.includes('ÁREAS PRIORITÁRIAS') ||
-              paragrafo.includes('áreas prioritárias') ||
-              paragrafo.includes('Foram identificadas') && paragrafo.includes('dimensões');
+            return paragrafos.map((paragrafo, idx) => {
+              // Detectar se é a seção de áreas prioritárias
+              const ehSecaoAreasPrioritarias = paragrafo.includes('ÁREAS PRIORITÁRIAS') ||
+                paragrafo.includes('áreas prioritárias') ||
+                paragrafo.includes('Foram identificadas') && paragrafo.includes('dimensões');
 
-            // Se encontrou o título, pular este e o próximo (que é a lista)
-            if (ehSecaoAreasPrioritarias) {
-              pularProximo = true;
-              return null;
-            }
-
-            // Se deve pular este parágrafo (é a lista de áreas prioritárias)
-            if (pularProximo) {
-              const linhas = paragrafo.split('\n');
-              const temListaDePercentuais = linhas.some(l => l.match(/\d+%\s*\(/));
-
-              if (temListaDePercentuais) {
-                pularProximo = false;
+              // Se encontrou o título, pular este e o próximo (que é a lista)
+              if (ehSecaoAreasPrioritarias) {
+                pularProximo = true;
                 return null;
               }
-              pularProximo = false;
-            }
 
-            // Detectar se é um título (começa com letra maiúscula e tem menos de 80 chars sem ponto final)
-            const ehTitulo = paragrafo.length < 80 && !paragrafo.endsWith('.') && paragrafo === paragrafo.toUpperCase();
+              // Se deve pular este parágrafo (é a lista de áreas prioritárias)
+              if (pularProximo) {
+                const linhas = paragrafo.split('\n');
+                const temListaDePercentuais = linhas.some(l => l.match(/\d+%\s*\(/));
 
-            // Detectar listas (linhas que começam com •, -, ou número)
-            const linhas = paragrafo.split('\n');
-            const ehLista = linhas.some(l => l.trim().match(/^[•\-\d]/));
+                if (temListaDePercentuais) {
+                  pularProximo = false;
+                  return null;
+                }
+                pularProximo = false;
+              }
 
-            if (ehTitulo) {
-              return (
-                <div key={idx} className="flex items-center gap-3 pt-4 pb-2">
-                  <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <Target className="h-4 w-4 text-blue-300" />
+              // Detectar se é um título (começa com letra maiúscula e tem menos de 80 chars sem ponto final)
+              const ehTitulo = paragrafo.length < 80 && !paragrafo.endsWith('.') && paragrafo === paragrafo.toUpperCase();
+
+              // Detectar listas (linhas que começam com •, -, ou número)
+              const linhas = paragrafo.split('\n');
+              const ehLista = linhas.some(l => l.trim().match(/^[•\-\d]/));
+
+              if (ehTitulo) {
+                return (
+                  <div key={idx} className="flex items-center gap-3 pt-4 pb-2">
+                    <div className="p-2 bg-blue-500/20 rounded-lg">
+                      <Target className="h-4 w-4 text-blue-300" />
+                    </div>
+                    <h4 className="text-white font-bold text-base">{paragrafo}</h4>
                   </div>
-                  <h4 className="text-white font-bold text-base">{paragrafo}</h4>
+                );
+              }
+
+              if (ehLista) {
+                return (
+                  <div key={idx} className="bg-white/5 backdrop-blur-xl rounded-xl p-5 border border-white/10">
+                    <div className="space-y-2">
+                      {linhas.map((linha, i) => {
+                        const textoLimpo = linha.trim().replace(/^[•\-\d\.]+\s*/, '');
+                        if (!textoLimpo) return null;
+
+                        return (
+                          <div key={i} className="flex items-start gap-3">
+                            <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
+                            <p className="text-white/85 text-sm leading-relaxed flex-1">{textoLimpo}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              }
+
+              // Parágrafo normal
+              return (
+                <div key={idx} className="bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-xl rounded-xl p-5 border border-white/10">
+                  <p className="text-white/90 text-sm leading-relaxed">{paragrafo}</p>
                 </div>
               );
-            }
-
-            if (ehLista) {
-              return (
-                <div key={idx} className="bg-white/5 backdrop-blur-xl rounded-xl p-5 border border-white/10">
-                  <div className="space-y-2">
-                    {linhas.map((linha, i) => {
-                      const textoLimpo = linha.trim().replace(/^[•\-\d\.]+\s*/, '');
-                      if (!textoLimpo) return null;
-
-                      return (
-                        <div key={i} className="flex items-start gap-3">
-                          <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
-                          <p className="text-white/85 text-sm leading-relaxed flex-1">{textoLimpo}</p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            }
-
-            // Parágrafo normal
-            return (
-              <div key={idx} className="bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-xl rounded-xl p-5 border border-white/10">
-                <p className="text-white/90 text-sm leading-relaxed">{paragrafo}</p>
-              </div>
-            );
-          });
-        })()}
-      </div>
-    ) : (
-      <div className="bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/10 space-y-4">
-        <Skeleton className="h-6 w-3/4 bg-white/10" />
-        <Skeleton className="h-4 w-full bg-white/10" />
-        <Skeleton className="h-4 w-full bg-white/10" />
-        <Skeleton className="h-4 w-5/6 bg-white/10" />
-        <div className="pt-4 space-y-2">
-          <Skeleton className="h-4 w-full bg-white/10" />
-          <Skeleton className="h-4 w-full bg-white/10" />
+            });
+          })()}
         </div>
-      </div>
-    )
-  }
+      ) : (
+        <div className="bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/10 space-y-4">
+          <Skeleton className="h-6 w-3/4 bg-white/10" />
+          <Skeleton className="h-4 w-full bg-white/10" />
+          <Skeleton className="h-4 w-full bg-white/10" />
+          <Skeleton className="h-4 w-5/6 bg-white/10" />
+          <div className="pt-4 space-y-2">
+            <Skeleton className="h-4 w-full bg-white/10" />
+            <Skeleton className="h-4 w-full bg-white/10" />
+          </div>
+        </div>
+      )
+    }
 
-  {/* Áreas Prioritárias - Visualização Gráfica */ }
-  {
-    prgData?.aiAnalysis.sintese && (
-      <div className="mt-6">
-        <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl bg-white/10" />}>
-          <AreasPrioritariasLazy texto={prgData.aiAnalysis.sintese} />
-        </Suspense>
-      </div>
-    )
-  }
+    {/* Áreas Prioritárias - Visualização Gráfica */}
+    {
+      prgData?.aiAnalysis.sintese && (
+        <div className="mt-6">
+          <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl bg-white/10" />}>
+            <AreasPrioritariasLazy texto={prgData.aiAnalysis.sintese} />
+          </Suspense>
+        </div>
+      )
+    }
 
-  {/* Metodologia e Frameworks */ }
-  < div className="grid grid-cols-1 md:grid-cols-3 gap-4" >
-    <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 backdrop-blur-xl rounded-xl p-4 border border-purple-400/20">
-      <div className="flex items-center gap-2 mb-2">
-        <GraduationCap className="h-5 w-5 text-purple-300" />
-        <h4 className="text-purple-200 font-bold text-sm">Modelo Karasek-Theorell</h4>
+    {/* Metodologia e Frameworks */}
+    < div className="grid grid-cols-1 md:grid-cols-3 gap-4" >
+      <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 backdrop-blur-xl rounded-xl p-4 border border-purple-400/20">
+        <div className="flex items-center gap-2 mb-2">
+          <GraduationCap className="h-5 w-5 text-purple-300" />
+          <h4 className="text-purple-200 font-bold text-sm">Modelo Karasek-Theorell</h4>
+        </div>
+        <p className="text-purple-100/80 text-xs">Demanda-Controle-Suporte Social (1990)</p>
       </div>
-      <p className="text-purple-100/80 text-xs">Demanda-Controle-Suporte Social (1990)</p>
-    </div>
 
-    <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 backdrop-blur-xl rounded-xl p-4 border border-blue-400/20">
-      <div className="flex items-center gap-2 mb-2">
-        <Shield className="h-5 w-5 text-blue-300" />
-        <h4 className="text-blue-200 font-bold text-sm">NR-01 (MTP nº 6.730/2020)</h4>
+      <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 backdrop-blur-xl rounded-xl p-4 border border-blue-400/20">
+        <div className="flex items-center gap-2 mb-2">
+          <Shield className="h-5 w-5 text-blue-300" />
+          <h4 className="text-blue-200 font-bold text-sm">NR-01 (MTP nº 6.730/2020)</h4>
+        </div>
+        <p className="text-blue-100/80 text-xs">Gestão de Riscos Psicossociais</p>
       </div>
-      <p className="text-blue-100/80 text-xs">Gestão de Riscos Psicossociais</p>
-    </div>
 
-    <div className="bg-gradient-to-br from-green-500/10 to-green-600/10 backdrop-blur-xl rounded-xl p-4 border border-green-400/20">
-      <div className="flex items-center gap-2 mb-2">
-        <Target className="h-5 w-5 text-green-300" />
-        <h4 className="text-green-200 font-bold text-sm">ISO 45003:2021</h4>
+      <div className="bg-gradient-to-br from-green-500/10 to-green-600/10 backdrop-blur-xl rounded-xl p-4 border border-green-400/20">
+        <div className="flex items-center gap-2 mb-2">
+          <Target className="h-5 w-5 text-green-300" />
+          <h4 className="text-green-200 font-bold text-sm">ISO 45003:2021</h4>
+        </div>
+        <p className="text-green-100/80 text-xs">Saúde e Segurança Psicológica</p>
       </div>
-      <p className="text-green-100/80 text-xs">Saúde e Segurança Psicológica</p>
-    </div>
+    </div >
+
+    {/* Footer com timestamp */}
+    < div className="flex items-center justify-between pt-4 border-t border-white/10" >
+      <div className="flex items-center gap-2 text-white/60 text-xs">
+        <Calendar className="h-4 w-4" />
+        <span>Última atualização: {new Date().toLocaleString('pt-BR')}</span>
+      </div>
+      <div className="flex items-center gap-2 text-white/60 text-xs">
+        <Sparkles className="h-4 w-4" />
+        <span>Análise em tempo real</span>
+      </div>
+    </div >
   </div >
-
-  {/* Footer com timestamp */ }
-  < div className="flex items-center justify-between pt-4 border-t border-white/10" >
-    <div className="flex items-center gap-2 text-white/60 text-xs">
-      <Calendar className="h-4 w-4" />
-      <span>Última atualização: {new Date().toLocaleString('pt-BR')}</span>
-    </div>
-    <div className="flex items-center gap-2 text-white/60 text-xs">
-      <Sparkles className="h-4 w-4" />
-      <span>Análise em tempo real</span>
-    </div>
-  </div >
-          </div >
         </div >
 
     {/* TABS - RELATÓRIOS DETALHADOS */ }
