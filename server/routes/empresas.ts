@@ -1210,34 +1210,42 @@ router.get('/estado-psicossocial', authenticateToken, async (req: AuthRequest, r
       r.dataRealizacao && new Date(r.dataRealizacao) >= trintaDiasAtras
     );
 
-    // Análise por dimensão psicossocial
-    const dimensoesAgregadas: Record<string, { total: number; soma: number; nivel: string }> = {};
+    // Análise por dimensão psicossocial - LÓGICA: Média de TODOS os testes
+    const dimensoesAgregadas: Record<string, { total: number; soma: number }> = {};
     const alertasCriticos: string[] = [];
-    const riscosPsicossociais: Array<{ nome: string; nivel: string; percentual: number; descricao: string }> = [];
 
-    // Processar metadados dos resultados
+    // Processar resultados (já ordenados por data decrescente)
     resultadosList.forEach(resultado => {
+      const colabId = resultado.colaboradorId;
+      if (!colabId) return;
+
       const metadados = resultado.metadados as Record<string, any> || {};
       const analiseCompleta = metadados.analise_completa || {};
 
-      // Agregar dimensões
+      // Agregar dimensões (Soma de todos os testes)
       if (analiseCompleta.dimensoes) {
         Object.entries(analiseCompleta.dimensoes).forEach(([dimensaoId, dados]: [string, any]) => {
           if (!dimensoesAgregadas[dimensaoId]) {
-            dimensoesAgregadas[dimensaoId] = { total: 0, soma: 0, nivel: '' };
+            dimensoesAgregadas[dimensaoId] = { total: 0, soma: 0 };
           }
           dimensoesAgregadas[dimensaoId].total++;
           dimensoesAgregadas[dimensaoId].soma += dados.percentual || dados.media || dados.pontuacao || 0;
         });
       }
 
+
+
       // Identificar alertas críticos
       if (metadados.alertas_criticos && Array.isArray(metadados.alertas_criticos)) {
         alertasCriticos.push(...metadados.alertas_criticos);
       }
+
+
     });
 
-    // Calcular médias das dimensões
+
+
+    // Calcular médias finais das dimensões
     const dimensoesAnalise = Object.entries(dimensoesAgregadas).map(([dimensaoId, dados]) => {
       const media = dados.total > 0 ? dados.soma / dados.total : 0;
       let nivel = 'Bom';
@@ -1415,14 +1423,29 @@ router.get('/pgr', authenticateToken, async (req: AuthRequest, res) => {
     });
 
     // ✨ USAR MESMA LÓGICA DO ESTADO PSICOSSOCIAL - Processar metadados dos testes
+    // LÓGICA: Média de TODOS os testes (Histórico Completo)
     const dimensoesAgregadas: Record<string, { total: number; soma: number }> = {};
     const alertasCriticos: string[] = [];
 
-    // Processar metadados dos resultados (mesma lógica do estado-psicossocial)
+    // Processar metadados dos resultados (resultados já ordenados por data decrescente)
     resultadosList.forEach(resultado => {
+      const colabId = resultado.colaboradorId;
+      if (!colabId) return;
+
       const metadados = resultado.metadados as Record<string, any> || {};
       const analiseCompleta = metadados.analise_completa || {};
 
+
+
+
+
+      // Identificar alertas críticos (apenas se for teste recente)
+      // Identificar alertas críticos
+      if (metadados.alertas_criticos && Array.isArray(metadados.alertas_criticos)) {
+        alertasCriticos.push(...metadados.alertas_criticos);
+      }
+
+      // Agregar dimensões apenas se ainda não foram processadas para este colaborador
       // Agregar dimensões
       if (analiseCompleta.dimensoes) {
         Object.entries(analiseCompleta.dimensoes).forEach(([dimensaoId, dados]: [string, any]) => {
@@ -1433,12 +1456,9 @@ router.get('/pgr', authenticateToken, async (req: AuthRequest, res) => {
           dimensoesAgregadas[dimensaoId].soma += dados.percentual || dados.media || dados.pontuacao || 0;
         });
       }
-
-      // Identificar alertas críticos
-      if (metadados.alertas_criticos && Array.isArray(metadados.alertas_criticos)) {
-        alertasCriticos.push(...metadados.alertas_criticos);
-      }
     });
+
+
 
     // Mapeamento correto de IDs para nomes com acentuação
     const nomesDimensoes: Record<string, string> = {
@@ -1914,14 +1934,30 @@ router.get('/pgr/publico/:token', async (req, res) => {
       .orderBy(desc(resultados.dataRealizacao));
 
     // ✨ PROCESSAR METADADOS - MESMA LÓGICA DA ROTA PRINCIPAL
-    const dimensoesAgregadas: Record<string, { total: number; soma: number }> = {};
+    // LÓGICA ATUALIZADA (Snapshot Atual): considera apenas o dado mais recente de cada dimensão
+    const dimensoesPorColaborador = new Map<string, Map<string, number>>();
     const alertasCriticos: string[] = [];
 
     // Processar metadados dos resultados (EXATAMENTE como rota principal)
     resultadosList.forEach(resultado => {
+      const colabId = resultado.colaboradorId;
+      if (!colabId) return;
+
       const metadados = resultado.metadados as Record<string, any> || {};
       const analiseCompleta = metadados.analise_completa || {};
 
+      // LÓGICA: Média de TODOS os testes (Histórico Completo)
+      const dimensoesAgregadas: Record<string, { total: number; soma: number }> = {};
+
+
+
+      // Identificar alertas críticos (apenas se for teste recente)
+      // Identificar alertas críticos
+      if (metadados.alertas_criticos && Array.isArray(metadados.alertas_criticos)) {
+        alertasCriticos.push(...metadados.alertas_criticos);
+      }
+
+      // Agregar dimensões apenas se ainda não foram processadas para este colaborador
       // Agregar dimensões
       if (analiseCompleta.dimensoes) {
         Object.entries(analiseCompleta.dimensoes).forEach(([dimensaoId, dados]: [string, any]) => {
@@ -1932,12 +1968,9 @@ router.get('/pgr/publico/:token', async (req, res) => {
           dimensoesAgregadas[dimensaoId].soma += dados.percentual || dados.media || dados.pontuacao || 0;
         });
       }
-
-      // Identificar alertas críticos
-      if (metadados.alertas_criticos && Array.isArray(metadados.alertas_criticos)) {
-        alertasCriticos.push(...metadados.alertas_criticos);
-      }
     });
+
+
 
     // Mapeamento de nomes (mesmo da rota principal)
     const nomesDimensoes: Record<string, string> = {
