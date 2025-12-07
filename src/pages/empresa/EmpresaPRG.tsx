@@ -1860,7 +1860,7 @@ export default function EmpresaPRG() {
     </div>
 
     {/* Conteúdo principal da análise */ }
-  < div className="relative p-8 space-y-6" >
+  <div className="relative p-8 space-y-6">
     {/* Análise Visual Organizada */}
     {
       prgData?.aiAnalysis.sintese ? (
