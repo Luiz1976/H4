@@ -1648,7 +1648,7 @@ export default function EmpresaPRG() {
                     <div className="relative">
                       <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl blur-lg opacity-75 animate-pulse"></div>
                       <div className="relative p-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl">
-                        <FileText className="h-12 w-12 text-white" />
+                        <img src="/pgr-indicator.png" alt="Indicador PGR" className="h-12 w-12 object-contain" />
                       </div>
                     </div>
                     <div>
@@ -1710,95 +1710,86 @@ export default function EmpresaPRG() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+            <SelectTrigger className="bg-white/5 border-white/20 text-white" data-testid="select-periodo">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="30">Últimos 30 dias</SelectItem>
+              <SelectItem value="90">Últimos 90 dias</SelectItem>
+              <SelectItem value="180">Últimos 180 dias</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* FILTROS DINÂMICOS */}
-        <Card className="border-0 bg-white/10 backdrop-blur-xl shadow-xl">
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-white/80">Período</label>
-                <Select value={periodo} onValueChange={setPeriodo}>
-                  <SelectTrigger className="bg-white/5 border-white/20 text-white" data-testid="select-periodo">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="30">Últimos 30 dias</SelectItem>
-                    <SelectItem value="90">Últimos 90 dias</SelectItem>
-                    <SelectItem value="180">Últimos 180 dias</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-white/80">Setor / Unidade</label>
+          <Select value={setor} onValueChange={setSetor}>
+            <SelectTrigger className="bg-white/5 border-white/20 text-white" data-testid="select-setor">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos os setores</SelectItem>
+              <SelectItem value="operacional">Operacional</SelectItem>
+              <SelectItem value="administrativo">Administrativo</SelectItem>
+              <SelectItem value="comercial">Comercial</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-white/80">Setor / Unidade</label>
-                <Select value={setor} onValueChange={setSetor}>
-                  <SelectTrigger className="bg-white/5 border-white/20 text-white" data-testid="select-setor">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos os setores</SelectItem>
-                    <SelectItem value="operacional">Operacional</SelectItem>
-                    <SelectItem value="administrativo">Administrativo</SelectItem>
-                    <SelectItem value="comercial">Comercial</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-white/80">Cargo</label>
+          <Select defaultValue="todos">
+            <SelectTrigger className="bg-white/5 border-white/20 text-white" data-testid="select-cargo">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos os cargos</SelectItem>
+              <SelectItem value="gestao">Gestão</SelectItem>
+              <SelectItem value="operacional">Operacional</SelectItem>
+              <SelectItem value="tecnico">Técnico</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-white/80">Cargo</label>
-                <Select defaultValue="todos">
-                  <SelectTrigger className="bg-white/5 border-white/20 text-white" data-testid="select-cargo">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos os cargos</SelectItem>
-                    <SelectItem value="gestao">Gestão</SelectItem>
-                    <SelectItem value="operacional">Operacional</SelectItem>
-                    <SelectItem value="tecnico">Técnico</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-white/80">Tipo de Teste</label>
-                <Select defaultValue="todos">
-                  <SelectTrigger className="bg-white/5 border-white/20 text-white" data-testid="select-teste">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos os testes</SelectItem>
-                    <SelectItem value="clima">Clima Organizacional</SelectItem>
-                    <SelectItem value="estresse">Estresse Ocupacional</SelectItem>
-                    <SelectItem value="burnout">Burnout</SelectItem>
-                    <SelectItem value="qvt">QVT</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-white/80">Tipo de Teste</label>
+          <Select defaultValue="todos">
+            <SelectTrigger className="bg-white/5 border-white/20 text-white" data-testid="select-teste">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos os testes</SelectItem>
+              <SelectItem value="clima">Clima Organizacional</SelectItem>
+              <SelectItem value="estresse">Estresse Ocupacional</SelectItem>
+              <SelectItem value="burnout">Burnout</SelectItem>
+              <SelectItem value="qvt">QVT</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </CardContent>
         </Card>
 
-        {/* KPIS - INDICADORES-CHAVE */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {loading ? (
-            Array.from({ length: 6 }).map((_, index) => (
-              <Card key={index} className="border-0 bg-white/10 backdrop-blur-xl shadow-xl">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <Skeleton className="h-12 w-12 rounded-xl bg-white/10" />
-                    <Skeleton className="h-6 w-20 rounded-full bg-white/10" />
-                  </div>
-                  <Skeleton className="h-4 w-32 mb-3 bg-white/10" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-10 w-16 bg-white/10" />
-                    <Skeleton className="h-2 w-full bg-white/10" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          ) : (
+    {/* KPIS - INDICADORES-CHAVE */ }
+    <div className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" >
+      {
+        loading?(
+          Array.from({ length: 6 }).map((_, index) => (
+            <Card key={index} className="border-0 bg-white/10 backdrop-blur-xl shadow-xl">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <Skeleton className="h-12 w-12 rounded-xl bg-white/10" />
+                  <Skeleton className="h-6 w-20 rounded-full bg-white/10" />
+                </div>
+                <Skeleton className="h-4 w-32 mb-3 bg-white/10" />
+                <div className="space-y-2">
+                  <Skeleton className="h-10 w-16 bg-white/10" />
+                  <Skeleton className="h-2 w-full bg-white/10" />
+                </div>
+              </CardContent>
+            </Card>
+          ))
+            ) : (
             kpis.map((kpi, index) => (
               <Card key={index} className="border-0 bg-white/10 backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all" data-testid={`card-kpi-${index}`}>
                 <CardContent className="p-6">
@@ -1820,93 +1811,49 @@ export default function EmpresaPRG() {
                 </CardContent>
               </Card>
             ))
-          )}
+          )
+}
         </div>
 
-        {/* ANÁLISE INTELIGENTE DA IA - VERSÃO REVOLUCIONÁRIA */}
-        <div className="relative overflow-hidden rounded-3xl border-0 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 backdrop-blur-xl shadow-2xl">
-          {/* Partículas de fundo animadas */}
-          <div className="absolute inset-0 opacity-20">
-            {[...Array(15)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute rounded-full bg-white animate-pulse"
-                style={{
-                  width: `${Math.random() * 4 + 2}px`,
-                  height: `${Math.random() * 4 + 2}px`,
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 3}s`,
-                  animationDuration: `${Math.random() * 3 + 2}s`
-                }}
-              />
-            ))}
+  {/* ANÁLISE INTELIGENTE DA IA - VERSÃO REVOLUCIONÁRIA */ }
+  <div className = "relative overflow-hidden rounded-3xl border-0 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 backdrop-blur-xl shadow-2xl" >
+    {/* Partículas de fundo animadas */ }
+    <div className = "absolute inset-0 opacity-20" >
+      {
+        [...Array(15)].map((_, i) => (
+        <div
+          key={i}
+          className="absolute rounded-full bg-white animate-pulse"
+          style={{
+            width: `${Math.random() * 4 + 2}px`,
+            height: `${Math.random() * 4 + 2}px`,
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            animationDelay: `${Math.random() * 3}s`,
+            animationDuration: `${Math.random() * 3 + 2}s`
+          }}
+        />
+      <p className="text-white/70 text-xs font-medium mb-1">Testes Realizados</p>
+      <p className="text-white text-2xl font-bold">{prgData?.totalTestes || 0}</p>
+    </div>
+    <div className="bg-white/5 backdrop-blur-xl rounded-xl p-3 border border-white/10">
+      <p className="text-white/70 text-xs font-medium mb-1">Cobertura Populacional</p>
+      <p className="text-white text-2xl font-bold">{prgData?.cobertura || 0}%</p>
+    </div>
+    <div className="bg-white/5 backdrop-blur-xl rounded-xl p-3 border border-white/10">
+      <p className="text-white/70 text-xs font-medium mb-1">Índice Global PGR</p>
+      <p className={`text-2xl font-bold ${prgData && prgData.indiceGlobal < 40 ? 'text-red-400' : prgData && prgData.indiceGlobal < 60 ? 'text-yellow-400' : 'text-green-400'}`}>
+        {prgData?.indiceGlobal || 0}%
+      </p>
+    </div>
+  </div>
           </div>
 
-          {/* Header futurista */}
-          <div className="relative p-8 border-b border-white/10">
-            <div className="flex items-start justify-between gap-6 flex-wrap">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl blur-xl opacity-50 animate-pulse"></div>
-                  <div className="relative p-4 bg-gradient-to-br from-purple-500/30 to-blue-500/30 rounded-2xl backdrop-blur-xl border border-white/20">
-                    <Logo size="sm" showText={false} className="h-8 w-8 text-white animate-pulse" />
-                  </div>
-                </div>
-                <div>
-                  <h2 className="text-3xl font-black text-white mb-1 bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent">
-                    HumaniQ AI - Análise Inteligente
-                  </h2>
-                  <p className="text-white/80 font-medium text-sm">
-                    Powered by Google Gemini AI • ISO 45003:2021 • NR-01 Compliant
-                  </p>
-                </div>
-              </div>
-
-              {/* Badges de credibilidade */}
-              <div className="flex gap-2 flex-wrap">
-                <Badge className="bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-400/30 text-green-100 backdrop-blur-xl px-3 py-1">
-                  <Target className="h-3 w-3 mr-1" />
-                  ISO 45003
-                </Badge>
-                <Badge className="bg-gradient-to-r from-blue-500/30 to-cyan-500/30 border border-blue-400/30 text-blue-100 backdrop-blur-xl px-3 py-1">
-                  <Shield className="h-3 w-3 mr-1" />
-                  NR-01
-                </Badge>
-                <Badge className="bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-purple-400/30 text-purple-100 backdrop-blur-xl px-3 py-1">
-                  <Sparkles className="h-3 w-3 mr-1" />
-                  AI-Powered
-                </Badge>
-              </div>
-            </div>
-
-            {/* Mini KPIs */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
-              <div className="bg-white/5 backdrop-blur-xl rounded-xl p-3 border border-white/10">
-                <p className="text-white/70 text-xs font-medium mb-1">Colaboradores Avaliados</p>
-                <p className="text-white text-2xl font-bold">{prgData?.totalColaboradores || 0}</p>
-              </div>
-              <div className="bg-white/5 backdrop-blur-xl rounded-xl p-3 border border-white/10">
-                <p className="text-white/70 text-xs font-medium mb-1">Testes Realizados</p>
-                <p className="text-white text-2xl font-bold">{prgData?.totalTestes || 0}</p>
-              </div>
-              <div className="bg-white/5 backdrop-blur-xl rounded-xl p-3 border border-white/10">
-                <p className="text-white/70 text-xs font-medium mb-1">Cobertura Populacional</p>
-                <p className="text-white text-2xl font-bold">{prgData?.cobertura || 0}%</p>
-              </div>
-              <div className="bg-white/5 backdrop-blur-xl rounded-xl p-3 border border-white/10">
-                <p className="text-white/70 text-xs font-medium mb-1">Índice Global PGR</p>
-                <p className={`text-2xl font-bold ${prgData && prgData.indiceGlobal < 40 ? 'text-red-400' : prgData && prgData.indiceGlobal < 60 ? 'text-yellow-400' : 'text-green-400'}`}>
-                  {prgData?.indiceGlobal || 0}%
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Conteúdo principal da análise */}
-          <div className="relative p-8 space-y-6">
-            {/* Análise Visual Organizada */}
-            {prgData?.aiAnalysis.sintese ? (
+          {/* Conteúdo principal da análise */ }
+          <div className = "relative p-8 space-y-6" >
+          {/* Análise Visual Organizada */ }
+{
+            prgData?.aiAnalysis.sintese ? (
               <div className="space-y-4">
                 {/* Processar e exibir a análise de forma estruturada */}
                 {(() => {
@@ -2003,60 +1950,63 @@ export default function EmpresaPRG() {
                   <Skeleton className="h-4 w-full bg-white/10" />
                 </div>
               </div>
-            )}
+            )
+          }
 
-            {/* Áreas Prioritárias - Visualização Gráfica */}
-            {prgData?.aiAnalysis.sintese && (
+{/* Áreas Prioritárias - Visualização Gráfica */ }
+{
+            prgData?.aiAnalysis.sintese && (
               <div className="mt-6">
                 <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl bg-white/10" />}>
                   <AreasPrioritariasLazy texto={prgData.aiAnalysis.sintese} />
                 </Suspense>
               </div>
-            )}
+            )
+          }
 
-            {/* Metodologia e Frameworks */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 backdrop-blur-xl rounded-xl p-4 border border-purple-400/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <GraduationCap className="h-5 w-5 text-purple-300" />
-                  <h4 className="text-purple-200 font-bold text-sm">Modelo Karasek-Theorell</h4>
-                </div>
-                <p className="text-purple-100/80 text-xs">Demanda-Controle-Suporte Social (1990)</p>
-              </div>
+{/* Metodologia e Frameworks */ }
+          <div className = "grid grid-cols-1 md:grid-cols-3 gap-4" >
+  <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 backdrop-blur-xl rounded-xl p-4 border border-purple-400/20">
+    <div className="flex items-center gap-2 mb-2">
+      <GraduationCap className="h-5 w-5 text-purple-300" />
+      <h4 className="text-purple-200 font-bold text-sm">Modelo Karasek-Theorell</h4>
+    </div>
+    <p className="text-purple-100/80 text-xs">Demanda-Controle-Suporte Social (1990)</p>
+  </div>
 
-              <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 backdrop-blur-xl rounded-xl p-4 border border-blue-400/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <Shield className="h-5 w-5 text-blue-300" />
-                  <h4 className="text-blue-200 font-bold text-sm">NR-01 (MTP nº 6.730/2020)</h4>
-                </div>
-                <p className="text-blue-100/80 text-xs">Gestão de Riscos Psicossociais</p>
-              </div>
+  <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 backdrop-blur-xl rounded-xl p-4 border border-blue-400/20">
+    <div className="flex items-center gap-2 mb-2">
+      <Shield className="h-5 w-5 text-blue-300" />
+      <h4 className="text-blue-200 font-bold text-sm">NR-01 (MTP nº 6.730/2020)</h4>
+    </div>
+    <p className="text-blue-100/80 text-xs">Gestão de Riscos Psicossociais</p>
+  </div>
 
-              <div className="bg-gradient-to-br from-green-500/10 to-green-600/10 backdrop-blur-xl rounded-xl p-4 border border-green-400/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <Target className="h-5 w-5 text-green-300" />
-                  <h4 className="text-green-200 font-bold text-sm">ISO 45003:2021</h4>
-                </div>
-                <p className="text-green-100/80 text-xs">Saúde e Segurança Psicológica</p>
-              </div>
-            </div>
+  <div className="bg-gradient-to-br from-green-500/10 to-green-600/10 backdrop-blur-xl rounded-xl p-4 border border-green-400/20">
+    <div className="flex items-center gap-2 mb-2">
+      <Target className="h-5 w-5 text-green-300" />
+      <h4 className="text-green-200 font-bold text-sm">ISO 45003:2021</h4>
+    </div>
+    <p className="text-green-100/80 text-xs">Saúde e Segurança Psicológica</p>
+  </div>
+</div>
 
-            {/* Footer com timestamp */}
-            <div className="flex items-center justify-between pt-4 border-t border-white/10">
-              <div className="flex items-center gap-2 text-white/60 text-xs">
-                <Calendar className="h-4 w-4" />
-                <span>Última atualização: {new Date().toLocaleString('pt-BR')}</span>
-              </div>
-              <div className="flex items-center gap-2 text-white/60 text-xs">
-                <Sparkles className="h-4 w-4" />
-                <span>Análise em tempo real</span>
-              </div>
-            </div>
+          {/* Footer com timestamp */ }
+          <div className = "flex items-center justify-between pt-4 border-t border-white/10" >
+  <div className="flex items-center gap-2 text-white/60 text-xs">
+    <Calendar className="h-4 w-4" />
+    <span>Última atualização: {new Date().toLocaleString('pt-BR')}</span>
+  </div>
+  <div className="flex items-center gap-2 text-white/60 text-xs">
+    <Sparkles className="h-4 w-4" />
+    <span>Análise em tempo real</span>
+  </div>
+</div>
           </div>
         </div>
 
-        {/* TABS - RELATÓRIOS DETALHADOS */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          {/* TABS - RELATÓRIOS DETALHADOS */ }
+          <Tabs value = { activeTab } onValueChange = { setActiveTab } className = "space-y-6" >
           <TabsList className="bg-white/10 backdrop-blur-xl border-0 p-1 grid grid-cols-3 md:grid-cols-7 gap-2">
             <TabsTrigger value="geral" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white" data-testid="tab-geral">
               Geral
@@ -2078,18 +2028,19 @@ export default function EmpresaPRG() {
             </TabsTrigger>
           </TabsList>
 
-          {/* GERAL - Gráfico de Radar */}
-          <TabsContent value="geral" className="space-y-6">
-            {loading ? (
-              <div className="space-y-6">
-                <Skeleton className="h-[400px] w-full rounded-xl bg-white/10" />
-                <Skeleton className="h-[300px] w-full rounded-xl bg-white/10" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Skeleton className="h-[300px] w-full rounded-xl bg-white/10" />
-                  <Skeleton className="h-[300px] w-full rounded-xl bg-white/10" />
-                </div>
-              </div>
-            ) : (
+{/* GERAL - Gráfico de Radar */ }
+          <TabsContent value = "geral" className = "space-y-6" >
+          {
+            loading?(
+      <div className = "space-y-6" >
+        <Skeleton className="h-[400px] w-full rounded-xl bg-white/10" />
+        <Skeleton className="h-[300px] w-full rounded-xl bg-white/10" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Skeleton className="h-[300px] w-full rounded-xl bg-white/10" />
+          <Skeleton className="h-[300px] w-full rounded-xl bg-white/10" />
+        </div>
+      </div>
+    ) : (
               <>
                 {prgData && (
                   <Suspense fallback={<Skeleton className="h-[400px] w-full rounded-xl bg-white/10" />}>
@@ -2116,289 +2067,289 @@ export default function EmpresaPRG() {
                 )}
               </>
             )}
-          </TabsContent>
+</TabsContent>
 
-          {/* CLIMA ORGANIZACIONAL */}
-          <TabsContent value="clima" className="space-y-6">
-            {prgData && (
-              <Suspense fallback={<Skeleton className="h-[300px] w-full rounded-xl bg-white/10" />}>
-                <GraficoDistribuicaoRiscosLazy dados={prgData.distribuicaoRiscos} />
-              </Suspense>
-            )}
+  {/* CLIMA ORGANIZACIONAL */ }
+  <TabsContent value = "clima" className = "space-y-6" >
+    { prgData && (
+      <Suspense fallback={<Skeleton className="h-[300px] w-full rounded-xl bg-white/10" />}>
+        <GraficoDistribuicaoRiscosLazy dados={prgData.distribuicaoRiscos} />
+      </Suspense>
+    )}
 
-            {/* Card com métricas de clima */}
-            <Card className="border-0 bg-white/10 backdrop-blur-xl shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-white text-xl">Indicadores de Clima Organizacional</CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl">
-                  <p className="text-blue-300 text-sm font-semibold mb-1">Clima Positivo</p>
-                  <p className="text-white text-3xl font-bold">{prgData?.kpis.climaPositivo}%</p>
-                </div>
-                <div className="p-4 bg-green-500/20 border border-green-500/30 rounded-xl">
-                  <p className="text-green-300 text-sm font-semibold mb-1">Satisfação com Liderança</p>
-                  <p className="text-white text-3xl font-bold">{prgData?.kpis.satisfacaoChefia}%</p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+{/* Card com métricas de clima */ }
+<Card className="border-0 bg-white/10 backdrop-blur-xl shadow-xl">
+  <CardHeader>
+    <CardTitle className="text-white text-xl">Indicadores de Clima Organizacional</CardTitle>
+  </CardHeader>
+  <CardContent className="grid grid-cols-2 gap-4">
+    <div className="p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl">
+      <p className="text-blue-300 text-sm font-semibold mb-1">Clima Positivo</p>
+      <p className="text-white text-3xl font-bold">{prgData?.kpis.climaPositivo}%</p>
+    </div>
+    <div className="p-4 bg-green-500/20 border border-green-500/30 rounded-xl">
+      <p className="text-green-300 text-sm font-semibold mb-1">Satisfação com Liderança</p>
+      <p className="text-white text-3xl font-bold">{prgData?.kpis.satisfacaoChefia}%</p>
+    </div>
+  </CardContent>
+</Card>
+</TabsContent>
 
-          {/* ESTRESSE OCUPACIONAL */}
-          <TabsContent value="estresse" className="space-y-6">
-            {prgData && (
-              <Suspense fallback={<Skeleton className="h-[300px] w-full rounded-xl bg-white/10" />}>
-                <GraficoRadarDimensoesLazy dados={prgData.dimensoesPsicossociais} />
-              </Suspense>
-            )}
+  {/* ESTRESSE OCUPACIONAL */ }
+  <TabsContent value = "estresse" className = "space-y-6" >
+    { prgData && (
+      <Suspense fallback={<Skeleton className="h-[300px] w-full rounded-xl bg-white/10" />}>
+        <GraficoRadarDimensoesLazy dados={prgData.dimensoesPsicossociais} />
+      </Suspense>
+    )}
 
-            {/* Card com métricas de estresse */}
-            <Card className="border-0 bg-white/10 backdrop-blur-xl shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-white text-xl">Níveis de Estresse Ocupacional</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/80">Índice de Estresse</span>
-                    <span className="text-white font-bold text-xl">{prgData?.kpis.indiceEstresse}%</span>
-                  </div>
-                  <Progress value={prgData?.kpis.indiceEstresse} className="h-3" />
-                </div>
+{/* Card com métricas de estresse */ }
+<Card className="border-0 bg-white/10 backdrop-blur-xl shadow-xl">
+  <CardHeader>
+    <CardTitle className="text-white text-xl">Níveis de Estresse Ocupacional</CardTitle>
+  </CardHeader>
+  <CardContent className="space-y-4">
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="text-white/80">Índice de Estresse</span>
+        <span className="text-white font-bold text-xl">{prgData?.kpis.indiceEstresse}%</span>
+      </div>
+      <Progress value={prgData?.kpis.indiceEstresse} className="h-3" />
+    </div>
 
-                <div className="grid grid-cols-2 gap-4 mt-6">
-                  <div className={`p-4 rounded-xl ${(prgData?.kpis.riscoBurnout || 0) > 60 ? 'bg-red-500/20 border-red-500/30' : 'bg-yellow-500/20 border-yellow-500/30'} border`}>
-                    <p className={`text-sm font-semibold mb-1 ${(prgData?.kpis.riscoBurnout || 0) > 60 ? 'text-red-300' : 'text-yellow-300'}`}>Risco de Burnout</p>
-                    <p className="text-white text-3xl font-bold">{prgData?.kpis.riscoBurnout}%</p>
-                  </div>
-                  <div className="p-4 bg-green-500/20 border border-green-500/30 rounded-xl">
-                    <p className="text-green-300 text-sm font-semibold mb-1">Segurança Psicológica</p>
-                    <p className="text-white text-3xl font-bold">{prgData?.kpis.segurancaPsicologica}%</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+    <div className="grid grid-cols-2 gap-4 mt-6">
+      <div className={`p-4 rounded-xl ${(prgData?.kpis.riscoBurnout || 0) > 60 ? 'bg-red-500/20 border-red-500/30' : 'bg-yellow-500/20 border-yellow-500/30'} border`}>
+        <p className={`text-sm font-semibold mb-1 ${(prgData?.kpis.riscoBurnout || 0) > 60 ? 'text-red-300' : 'text-yellow-300'}`}>Risco de Burnout</p>
+        <p className="text-white text-3xl font-bold">{prgData?.kpis.riscoBurnout}%</p>
+      </div>
+      <div className="p-4 bg-green-500/20 border border-green-500/30 rounded-xl">
+        <p className="text-green-300 text-sm font-semibold mb-1">Segurança Psicológica</p>
+        <p className="text-white text-3xl font-bold">{prgData?.kpis.segurancaPsicologica}%</p>
+      </div>
+    </div>
+  </CardContent>
+</Card>
+</TabsContent>
 
-          {/* BURNOUT */}
-          <TabsContent value="burnout">
-            <Card className="border-0 bg-white/10 backdrop-blur-xl shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-white text-xl">Burnout e Resiliência</CardTitle>
-                <CardDescription className="text-white/60">
-                  Indicadores de esgotamento e capacidade de recuperação
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* KPI Principal */}
-                <div className="bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/30 rounded-xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-white font-bold text-lg">Risco de Burnout</h3>
-                    <Badge className={`${(prgData?.kpis.riscoBurnout || 0) > 60 ? 'bg-red-500' :
-                        (prgData?.kpis.riscoBurnout || 0) > 40 ? 'bg-yellow-500' : 'bg-green-500'
-                      } text-white`}>
-                      {(prgData?.kpis.riscoBurnout || 0) > 60 ? 'Crítico' :
-                        (prgData?.kpis.riscoBurnout || 0) > 40 ? 'Atenção' : 'Controlado'}
-                    </Badge>
-                  </div>
+  {/* BURNOUT */ }
+  <TabsContent value = "burnout" >
+    <Card className="border-0 bg-white/10 backdrop-blur-xl shadow-xl">
+      <CardHeader>
+        <CardTitle className="text-white text-xl">Burnout e Resiliência</CardTitle>
+        <CardDescription className="text-white/60">
+          Indicadores de esgotamento e capacidade de recuperação
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* KPI Principal */}
+        <div className="bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/30 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-white font-bold text-lg">Risco de Burnout</h3>
+            <Badge className={`${(prgData?.kpis.riscoBurnout || 0) > 60 ? 'bg-red-500' :
+              (prgData?.kpis.riscoBurnout || 0) > 40 ? 'bg-yellow-500' : 'bg-green-500'
+              } text-white`}>
+              {(prgData?.kpis.riscoBurnout || 0) > 60 ? 'Crítico' :
+                (prgData?.kpis.riscoBurnout || 0) > 40 ? 'Atenção' : 'Controlado'}
+            </Badge>
+          </div>
+          <div className="flex items-end gap-2">
+            <span className="text-white text-5xl font-bold">{prgData?.kpis.riscoBurnout}%</span>
+            <span className="text-white/60 mb-2">da força de trabalho</span>
+          </div>
+        </div>
+
+        {/* Dimensões Relacionadas */}
+        <div className="grid grid-cols-2 gap-4">
+          {prgData?.dimensoesPsicossociais
+            .filter(d => d.dimensao && ['Burnout', 'Exaustão', 'Esgotamento'].some(termo => d.dimensao.includes(termo)))
+            .slice(0, 4)
+            .map((dimensao, idx) => {
+              const nivel = dimensao.valor > 70 ? 'Bom' : dimensao.valor > 50 ? 'Atenção' : 'Crítico';
+              return (
+                <div key={idx} className="bg-white/5 rounded-xl p-4 border border-white/10">
+                  <p className="text-white/70 text-sm mb-2">{dimensao.dimensao}</p>
                   <div className="flex items-end gap-2">
-                    <span className="text-white text-5xl font-bold">{prgData?.kpis.riscoBurnout}%</span>
-                    <span className="text-white/60 mb-2">da força de trabalho</span>
+                    <span className={`text-2xl font-bold ${dimensao.valor > 70 ? 'text-green-400' :
+                      dimensao.valor > 50 ? 'text-yellow-400' : 'text-red-400'
+                      }`}>{Math.round(dimensao.valor)}%</span>
+                    <Badge className={`mb-1 text-xs ${nivel === 'Crítico' ? 'bg-red-500/80' :
+                      nivel === 'Atenção' ? 'bg-yellow-500/80' : 'bg-green-500/80'
+                      }`}>{nivel}</Badge>
                   </div>
+                  <Progress value={dimensao.valor} className="h-2 mt-2" />
                 </div>
+              );
+            })
+          }
+        </div>
 
-                {/* Dimensões Relacionadas */}
-                <div className="grid grid-cols-2 gap-4">
-                  {prgData?.dimensoesPsicossociais
-                    .filter(d => d.dimensao && ['Burnout', 'Exaustão', 'Esgotamento'].some(termo => d.dimensao.includes(termo)))
-                    .slice(0, 4)
-                    .map((dimensao, idx) => {
-                      const nivel = dimensao.valor > 70 ? 'Bom' : dimensao.valor > 50 ? 'Atenção' : 'Crítico';
-                      return (
-                        <div key={idx} className="bg-white/5 rounded-xl p-4 border border-white/10">
-                          <p className="text-white/70 text-sm mb-2">{dimensao.dimensao}</p>
-                          <div className="flex items-end gap-2">
-                            <span className={`text-2xl font-bold ${dimensao.valor > 70 ? 'text-green-400' :
-                                dimensao.valor > 50 ? 'text-yellow-400' : 'text-red-400'
-                              }`}>{Math.round(dimensao.valor)}%</span>
-                            <Badge className={`mb-1 text-xs ${nivel === 'Crítico' ? 'bg-red-500/80' :
-                                nivel === 'Atenção' ? 'bg-yellow-500/80' : 'bg-green-500/80'
-                              }`}>{nivel}</Badge>
-                          </div>
-                          <Progress value={dimensao.valor} className="h-2 mt-2" />
-                        </div>
-                      );
-                    })
-                  }
-                </div>
+        {/* Se não houver dimensões específicas de burnout */}
+        {prgData?.dimensoesPsicossociais.filter(d =>
+          d.dimensao && ['Burnout', 'Exaustão', 'Esgotamento'].some(termo => d.dimensao.includes(termo))
+        ).length === 0 && (
+            <div className="text-center py-6 bg-blue-500/10 rounded-xl border border-blue-500/20">
+              <Logo size="sm" showText={false} className="h-12 w-12 text-blue-400 mx-auto mb-3" />
+              <p className="text-white/70">Aguardando testes específicos de burnout</p>
+              <p className="text-white/50 text-sm mt-1">O risco atual é calculado com base nos indicadores gerais de estresse</p>
+            </div>
+          )}
+      </CardContent>
+    </Card>
+</TabsContent>
 
-                {/* Se não houver dimensões específicas de burnout */}
-                {prgData?.dimensoesPsicossociais.filter(d =>
-                  d.dimensao && ['Burnout', 'Exaustão', 'Esgotamento'].some(termo => d.dimensao.includes(termo))
-                ).length === 0 && (
-                    <div className="text-center py-6 bg-blue-500/10 rounded-xl border border-blue-500/20">
-                      <Logo size="sm" showText={false} className="h-12 w-12 text-blue-400 mx-auto mb-3" />
-                      <p className="text-white/70">Aguardando testes específicos de burnout</p>
-                      <p className="text-white/50 text-sm mt-1">O risco atual é calculado com base nos indicadores gerais de estresse</p>
-                    </div>
-                  )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* QVT */}
-          <TabsContent value="qvt">
-            <Card className="border-0 bg-white/10 backdrop-blur-xl shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-white text-xl">Qualidade de Vida no Trabalho</CardTitle>
-                <CardDescription className="text-white/60">
-                  Indicadores de satisfação e bem-estar
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Dimensões de QVT */}
-                <div className="grid grid-cols-2 gap-4">
-                  {prgData?.dimensoesPsicossociais
-                    .filter(d => d.dimensao && ['Satisfação', 'Saúde', 'Crescimento', 'Compensação', 'Condições'].some(termo => d.dimensao.includes(termo)))
-                    .slice(0, 6)
-                    .map((dimensao, idx) => {
-                      const nivel = dimensao.valor > 70 ? 'Bom' : dimensao.valor > 50 ? 'Atenção' : 'Crítico';
-                      return (
-                        <div key={idx} className="bg-white/5 rounded-xl p-4 border border-white/10">
-                          <p className="text-white/70 text-sm mb-2">{dimensao.dimensao}</p>
-                          <div className="flex items-end gap-2">
-                            <span className={`text-2xl font-bold ${dimensao.valor > 70 ? 'text-green-400' :
-                                dimensao.valor > 50 ? 'text-yellow-400' : 'text-red-400'
-                              }`}>{Math.round(dimensao.valor)}%</span>
-                            <Badge className={`mb-1 text-xs ${nivel === 'Crítico' ? 'bg-red-500/80' :
-                                nivel === 'Atenção' ? 'bg-yellow-500/80' : 'bg-green-500/80'
-                              }`}>{nivel}</Badge>
-                          </div>
-                          <Progress value={dimensao.valor} className="h-2 mt-2" />
-                        </div>
-                      );
-                    })
-                  }
-                </div>
-
-                {/* Indicador Geral de QVT */}
-                {prgData?.dimensoesPsicossociais.filter(d =>
-                  d.dimensao && ['Satisfação', 'Saúde', 'Crescimento', 'Compensação', 'Condições'].some(termo => d.dimensao.includes(termo))
-                ).length > 0 && (
-                    <div className="bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-xl p-6">
-                      <h3 className="text-white font-bold text-lg mb-4">Índice Geral de QVT</h3>
-                      <div className="flex items-end gap-2">
-                        <span className="text-white text-5xl font-bold">
-                          {Math.round(
-                            prgData.dimensoesPsicossociais
-                              .filter(d => d.dimensao && ['Satisfação', 'Saúde', 'Crescimento', 'Compensação', 'Condições'].some(termo => d.dimensao.includes(termo)))
-                              .reduce((acc, d) => acc + d.valor, 0) /
-                            prgData.dimensoesPsicossociais.filter(d => d.dimensao && ['Satisfação', 'Saúde', 'Crescimento', 'Compensação', 'Condições'].some(termo => d.dimensao.includes(termo))).length
-                          )}%
-                        </span>
-                        <span className="text-white/60 mb-2">média geral</span>
-                      </div>
-                    </div>
-                  )}
-
-                {/* Se não houver dimensões específicas de QVT */}
-                {prgData?.dimensoesPsicossociais.filter(d =>
-                  d.dimensao && ['Satisfação', 'Saúde', 'Crescimento', 'Compensação', 'Condições'].some(termo => d.dimensao.includes(termo))
-                ).length === 0 && (
-                    <div className="text-center py-6 bg-blue-500/10 rounded-xl border border-blue-500/20">
-                      <Logo size="sm" showText={false} className="h-12 w-12 text-blue-400 mx-auto mb-3" />
-                      <p className="text-white/70">Aguardando testes de Qualidade de Vida no Trabalho</p>
-                      <p className="text-white/50 text-sm mt-1">Realize avaliações de QVT para ver indicadores detalhados aqui</p>
-                    </div>
-                  )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* ASSÉDIO */}
-          <TabsContent value="assedio">
-            <Card className="border-0 bg-white/10 backdrop-blur-xl shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-white text-xl">Assédio Moral e Sexual</CardTitle>
-                <CardDescription className="text-white/60">
-                  Índice de percepção de segurança e proteção
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* KPI Principal - Segurança Psicológica */}
-                <div className="bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-white font-bold text-lg">Segurança Psicológica</h3>
-                    <Badge className={`${(prgData?.kpis.segurancaPsicologica || 0) > 70 ? 'bg-green-500' :
-                        (prgData?.kpis.segurancaPsicologica || 0) > 50 ? 'bg-yellow-500' : 'bg-red-500'
-                      } text-white`}>
-                      {(prgData?.kpis.segurancaPsicologica || 0) > 70 ? 'Saudável' :
-                        (prgData?.kpis.segurancaPsicologica || 0) > 50 ? 'Atenção' : 'Crítico'}
-                    </Badge>
+  {/* QVT */ }
+  <TabsContent value = "qvt" >
+    <Card className="border-0 bg-white/10 backdrop-blur-xl shadow-xl">
+      <CardHeader>
+        <CardTitle className="text-white text-xl">Qualidade de Vida no Trabalho</CardTitle>
+        <CardDescription className="text-white/60">
+          Indicadores de satisfação e bem-estar
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Dimensões de QVT */}
+        <div className="grid grid-cols-2 gap-4">
+          {prgData?.dimensoesPsicossociais
+            .filter(d => d.dimensao && ['Satisfação', 'Saúde', 'Crescimento', 'Compensação', 'Condições'].some(termo => d.dimensao.includes(termo)))
+            .slice(0, 6)
+            .map((dimensao, idx) => {
+              const nivel = dimensao.valor > 70 ? 'Bom' : dimensao.valor > 50 ? 'Atenção' : 'Crítico';
+              return (
+                <div key={idx} className="bg-white/5 rounded-xl p-4 border border-white/10">
+                  <p className="text-white/70 text-sm mb-2">{dimensao.dimensao}</p>
+                  <div className="flex items-end gap-2">
+                    <span className={`text-2xl font-bold ${dimensao.valor > 70 ? 'text-green-400' :
+                      dimensao.valor > 50 ? 'text-yellow-400' : 'text-red-400'
+                      }`}>{Math.round(dimensao.valor)}%</span>
+                    <Badge className={`mb-1 text-xs ${nivel === 'Crítico' ? 'bg-red-500/80' :
+                      nivel === 'Atenção' ? 'bg-yellow-500/80' : 'bg-green-500/80'
+                      }`}>{nivel}</Badge>
                   </div>
-                  <div className="flex items-end gap-2 mb-4">
-                    <span className="text-white text-5xl font-bold">{prgData?.kpis.segurancaPsicologica}%</span>
-                    <span className="text-white/60 mb-2">dos colaboradores se sentem seguros</span>
+                  <Progress value={dimensao.valor} className="h-2 mt-2" />
+                </div>
+              );
+            })
+          }
+        </div>
+
+        {/* Indicador Geral de QVT */}
+        {prgData?.dimensoesPsicossociais.filter(d =>
+          d.dimensao && ['Satisfação', 'Saúde', 'Crescimento', 'Compensação', 'Condições'].some(termo => d.dimensao.includes(termo))
+        ).length > 0 && (
+            <div className="bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-xl p-6">
+              <h3 className="text-white font-bold text-lg mb-4">Índice Geral de QVT</h3>
+              <div className="flex items-end gap-2">
+                <span className="text-white text-5xl font-bold">
+                  {Math.round(
+                    prgData.dimensoesPsicossociais
+                      .filter(d => d.dimensao && ['Satisfação', 'Saúde', 'Crescimento', 'Compensação', 'Condições'].some(termo => d.dimensao.includes(termo)))
+                      .reduce((acc, d) => acc + d.valor, 0) /
+                    prgData.dimensoesPsicossociais.filter(d => d.dimensao && ['Satisfação', 'Saúde', 'Crescimento', 'Compensação', 'Condições'].some(termo => d.dimensao.includes(termo))).length
+                  )}%
+                </span>
+                <span className="text-white/60 mb-2">média geral</span>
+              </div>
+            </div>
+          )}
+
+        {/* Se não houver dimensões específicas de QVT */}
+        {prgData?.dimensoesPsicossociais.filter(d =>
+          d.dimensao && ['Satisfação', 'Saúde', 'Crescimento', 'Compensação', 'Condições'].some(termo => d.dimensao.includes(termo))
+        ).length === 0 && (
+            <div className="text-center py-6 bg-blue-500/10 rounded-xl border border-blue-500/20">
+              <Logo size="sm" showText={false} className="h-12 w-12 text-blue-400 mx-auto mb-3" />
+              <p className="text-white/70">Aguardando testes de Qualidade de Vida no Trabalho</p>
+              <p className="text-white/50 text-sm mt-1">Realize avaliações de QVT para ver indicadores detalhados aqui</p>
+            </div>
+          )}
+      </CardContent>
+    </Card>
+</TabsContent>
+
+  {/* ASSÉDIO */ }
+  <TabsContent value = "assedio" >
+    <Card className="border-0 bg-white/10 backdrop-blur-xl shadow-xl">
+      <CardHeader>
+        <CardTitle className="text-white text-xl">Assédio Moral e Sexual</CardTitle>
+        <CardDescription className="text-white/60">
+          Índice de percepção de segurança e proteção
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* KPI Principal - Segurança Psicológica */}
+        <div className="bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-white font-bold text-lg">Segurança Psicológica</h3>
+            <Badge className={`${(prgData?.kpis.segurancaPsicologica || 0) > 70 ? 'bg-green-500' :
+              (prgData?.kpis.segurancaPsicologica || 0) > 50 ? 'bg-yellow-500' : 'bg-red-500'
+              } text-white`}>
+              {(prgData?.kpis.segurancaPsicologica || 0) > 70 ? 'Saudável' :
+                (prgData?.kpis.segurancaPsicologica || 0) > 50 ? 'Atenção' : 'Crítico'}
+            </Badge>
+          </div>
+          <div className="flex items-end gap-2 mb-4">
+            <span className="text-white text-5xl font-bold">{prgData?.kpis.segurancaPsicologica}%</span>
+            <span className="text-white/60 mb-2">dos colaboradores se sentem seguros</span>
+          </div>
+          <Progress value={prgData?.kpis.segurancaPsicologica} className="h-3" />
+        </div>
+
+        {/* Dimensões Relacionadas */}
+        <div className="grid grid-cols-2 gap-4">
+          {prgData?.dimensoesPsicossociais
+            .filter(d => d.dimensao && ['Assédio', 'Violência', 'Segurança Psicológica', 'Justiça'].some(termo => d.dimensao.includes(termo)))
+            .slice(0, 4)
+            .map((dimensao, idx) => {
+              const nivel = dimensao.valor > 70 ? 'Bom' : dimensao.valor > 50 ? 'Atenção' : 'Crítico';
+              return (
+                <div key={idx} className="bg-white/5 rounded-xl p-4 border border-white/10">
+                  <p className="text-white/70 text-sm mb-2">{dimensao.dimensao}</p>
+                  <div className="flex items-end gap-2">
+                    <span className={`text-2xl font-bold ${dimensao.valor > 70 ? 'text-green-400' :
+                      dimensao.valor > 50 ? 'text-yellow-400' : 'text-red-400'
+                      }`}>{Math.round(dimensao.valor)}%</span>
+                    <Badge className={`mb-1 text-xs ${nivel === 'Crítico' ? 'bg-red-500/80' :
+                      nivel === 'Atenção' ? 'bg-yellow-500/80' : 'bg-green-500/80'
+                      }`}>{nivel}</Badge>
                   </div>
-                  <Progress value={prgData?.kpis.segurancaPsicologica} className="h-3" />
+                  <Progress value={dimensao.valor} className="h-2 mt-2" />
                 </div>
+              );
+            })
+          }
+        </div>
 
-                {/* Dimensões Relacionadas */}
-                <div className="grid grid-cols-2 gap-4">
-                  {prgData?.dimensoesPsicossociais
-                    .filter(d => d.dimensao && ['Assédio', 'Violência', 'Segurança Psicológica', 'Justiça'].some(termo => d.dimensao.includes(termo)))
-                    .slice(0, 4)
-                    .map((dimensao, idx) => {
-                      const nivel = dimensao.valor > 70 ? 'Bom' : dimensao.valor > 50 ? 'Atenção' : 'Crítico';
-                      return (
-                        <div key={idx} className="bg-white/5 rounded-xl p-4 border border-white/10">
-                          <p className="text-white/70 text-sm mb-2">{dimensao.dimensao}</p>
-                          <div className="flex items-end gap-2">
-                            <span className={`text-2xl font-bold ${dimensao.valor > 70 ? 'text-green-400' :
-                                dimensao.valor > 50 ? 'text-yellow-400' : 'text-red-400'
-                              }`}>{Math.round(dimensao.valor)}%</span>
-                            <Badge className={`mb-1 text-xs ${nivel === 'Crítico' ? 'bg-red-500/80' :
-                                nivel === 'Atenção' ? 'bg-yellow-500/80' : 'bg-green-500/80'
-                              }`}>{nivel}</Badge>
-                          </div>
-                          <Progress value={dimensao.valor} className="h-2 mt-2" />
-                        </div>
-                      );
-                    })
-                  }
-                </div>
+        {/* Alerta de Compliance */}
+        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
+          <div className="flex items-start gap-3">
+            <Shield className="h-5 w-5 text-blue-400 mt-0.5" />
+            <div>
+              <p className="text-white font-semibold mb-1">Conformidade Legal</p>
+              <p className="text-white/70 text-sm">
+                A empresa mantém canais de denúncia confidenciais e políticas claras de prevenção ao assédio,
+                em conformidade com a Lei nº 14.457/2022 e NR-01.
+              </p>
+            </div>
+          </div>
+        </div>
 
-                {/* Alerta de Compliance */}
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
-                  <div className="flex items-start gap-3">
-                    <Shield className="h-5 w-5 text-blue-400 mt-0.5" />
-                    <div>
-                      <p className="text-white font-semibold mb-1">Conformidade Legal</p>
-                      <p className="text-white/70 text-sm">
-                        A empresa mantém canais de denúncia confidenciais e políticas claras de prevenção ao assédio,
-                        em conformidade com a Lei nº 14.457/2022 e NR-01.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Se não houver dimensões específicas */}
-                {prgData?.dimensoesPsicossociais.filter(d =>
-                  d.dimensao && ['Assédio', 'Violência', 'Segurança Psicológica'].some(termo => d.dimensao.includes(termo))
-                ).length === 0 && (
-                    <div className="text-center py-6 bg-blue-500/10 rounded-xl border border-blue-500/20">
-                      <Logo size="sm" showText={false} className="h-12 w-12 text-blue-400 mx-auto mb-3" />
-                      <p className="text-white/70">Aguardando testes específicos de assédio e segurança</p>
-                      <p className="text-white/50 text-sm mt-1">O indicador atual é baseado em segurança psicológica geral</p>
-                    </div>
-                  )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+        {/* Se não houver dimensões específicas */}
+        {prgData?.dimensoesPsicossociais.filter(d =>
+          d.dimensao && ['Assédio', 'Violência', 'Segurança Psicológica'].some(termo => d.dimensao.includes(termo))
+        ).length === 0 && (
+            <div className="text-center py-6 bg-blue-500/10 rounded-xl border border-blue-500/20">
+              <Logo size="sm" showText={false} className="h-12 w-12 text-blue-400 mx-auto mb-3" />
+              <p className="text-white/70">Aguardando testes específicos de assédio e segurança</p>
+              <p className="text-white/50 text-sm mt-1">O indicador atual é baseado em segurança psicológica geral</p>
+            </div>
+          )}
+      </CardContent>
+    </Card>
+</TabsContent>
         </Tabs>
 
-        {/* AÇÕES RECOMENDADAS - VERSÃO APRIMORADA */}
-        <Card className="border-0 bg-gradient-to-br from-orange-900/80 to-red-900/80 backdrop-blur-xl shadow-xl">
+  {/* AÇÕES RECOMENDADAS - VERSÃO APRIMORADA */ }
+  <Card className = "border-0 bg-gradient-to-br from-orange-900/80 to-red-900/80 backdrop-blur-xl shadow-xl" >
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-orange-500/30 rounded-lg">
@@ -2536,8 +2487,8 @@ export default function EmpresaPRG() {
           </CardContent>
         </Card>
 
-        {/* RELATÓRIOS EXPORTÁVEIS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  {/* RELATÓRIOS EXPORTÁVEIS */ }
+  <div className = "grid grid-cols-1 md:grid-cols-2 gap-4" >
           <Card className="border-0 bg-white/10 backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all cursor-pointer" data-testid="card-export-pdf">
             <CardContent className="p-6 text-center space-y-4">
               <div className="flex justify-center">
@@ -2583,41 +2534,41 @@ export default function EmpresaPRG() {
           </Card>
         </div>
 
-        {/* RODAPÉ HUMANIQ AI */}
-        <Card className="border-0 bg-gradient-to-r from-slate-900 via-indigo-900 to-purple-900 backdrop-blur-lg shadow-xl">
-          <CardContent className="p-6">
-            <div className="text-center space-y-4">
-              <div className="flex items-center justify-center gap-2">
-                <Logo size="sm" showText={false} className="h-6 w-6 text-purple-300" />
-                <h3 className="text-xl font-bold text-white">HumaniQ AI</h3>
-              </div>
-              <p className="text-white text-sm max-w-4xl mx-auto leading-relaxed">
-                A <strong>HumaniQ AI</strong> é uma plataforma inteligente especializada na análise e gestão de riscos psicossociais e ocupacionais,
-                desenvolvida com base na NR-01 e demais normativas vigentes de Saúde e Segurança do Trabalho (SST).
-                Utilizando inteligência artificial e metodologia científica, a HumaniQ AI realiza diagnósticos automatizados,
-                cruzamento de dados de testes psicossociais e comportamentais, e gera relatórios técnicos que subsidiam a construção do PGR
-                – Programa de Gerenciamento de Riscos, de forma precisa, ética e em conformidade com os princípios da prevenção e melhoria contínua.
-              </p>
-              <p className="text-white/90 text-xs">
-                Todos os relatórios da HumaniQ AI são produzidos de forma autônoma e imparcial, com base nos resultados dos colaboradores vinculados à empresa analisada,
-                garantindo sigilo, integridade dos dados e rastreabilidade completa do processo avaliativo.
-              </p>
-              <div className="flex items-center justify-center gap-4 pt-4">
-                <Badge variant="outline" className="bg-white/10 border-white/30 text-white">
-                  <Shield className="h-3 w-3 mr-1" />
-                  NR-01
-                </Badge>
-                <Badge variant="outline" className="bg-white/10 border-white/30 text-white">
-                  <CheckCircle2 className="h-3 w-3 mr-1" />
-                  ISO 45003
-                </Badge>
-                <Badge variant="outline" className="bg-white/10 border-white/30 text-white">
-                  <Logo size="sm" showText={false} className="h-3 w-3 mr-1" />
-                  IA Ética
-                </Badge>
-              </div>
-            </div>
-          </CardContent>
+  {/* RODAPÉ HUMANIQ AI */ }
+  <Card className = "border-0 bg-gradient-to-r from-slate-900 via-indigo-900 to-purple-900 backdrop-blur-lg shadow-xl" >
+    <CardContent className="p-6">
+      <div className="text-center space-y-4">
+        <div className="flex items-center justify-center gap-2">
+          <Logo size="sm" showText={false} className="h-6 w-6 text-purple-300" />
+          <h3 className="text-xl font-bold text-white">HumaniQ AI</h3>
+        </div>
+        <p className="text-white text-sm max-w-4xl mx-auto leading-relaxed">
+          A <strong>HumaniQ AI</strong> é uma plataforma inteligente especializada na análise e gestão de riscos psicossociais e ocupacionais,
+          desenvolvida com base na NR-01 e demais normativas vigentes de Saúde e Segurança do Trabalho (SST).
+          Utilizando inteligência artificial e metodologia científica, a HumaniQ AI realiza diagnósticos automatizados,
+          cruzamento de dados de testes psicossociais e comportamentais, e gera relatórios técnicos que subsidiam a construção do PGR
+          – Programa de Gerenciamento de Riscos, de forma precisa, ética e em conformidade com os princípios da prevenção e melhoria contínua.
+        </p>
+        <p className="text-white/90 text-xs">
+          Todos os relatórios da HumaniQ AI são produzidos de forma autônoma e imparcial, com base nos resultados dos colaboradores vinculados à empresa analisada,
+          garantindo sigilo, integridade dos dados e rastreabilidade completa do processo avaliativo.
+        </p>
+        <div className="flex items-center justify-center gap-4 pt-4">
+          <Badge variant="outline" className="bg-white/10 border-white/30 text-white">
+            <Shield className="h-3 w-3 mr-1" />
+            NR-01
+          </Badge>
+          <Badge variant="outline" className="bg-white/10 border-white/30 text-white">
+            <CheckCircle2 className="h-3 w-3 mr-1" />
+            ISO 45003
+          </Badge>
+          <Badge variant="outline" className="bg-white/10 border-white/30 text-white">
+            <Logo size="sm" showText={false} className="h-3 w-3 mr-1" />
+            IA Ética
+          </Badge>
+        </div>
+      </div>
+    </CardContent>
         </Card>
 
       </div>
