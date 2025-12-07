@@ -1640,133 +1640,162 @@ export default function EmpresaPRG() {
             <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-full blur-3xl -z-10 translate-x-1/2 -translate-y-1/2"></div>
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-500/30 to-cyan-500/30 rounded-full blur-3xl -z-10 -translate-x-1/2 translate-y-1/2"></div>
 
-            <CardContent className="p-12">
-              <div className="flex items-start justify-between gap-8 flex-wrap">
-                <div className="flex-1 min-w-[300px] space-y-6">
-                  {/* Icon & Title */}
-                  <div className="flex items-center gap-4">
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl blur-lg opacity-75 animate-pulse"></div>
-                      <div className="relative p-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl">
-                        <img src="/pgr-indicator.png" alt="Indicador PGR" className="h-12 w-12 object-contain" />
+            <CardContent className="p-8 md:p-10">
+              <div className="flex flex-col gap-8">
+
+                {/* Top Section: Title & Content */}
+                <div className="flex flex-col md:flex-row justify-between items-start gap-8">
+                  {/* Left Column: Branding & Description */}
+                  <div className="flex-1 space-y-8">
+
+                    {/* Branding Row */}
+                    <div className="flex items-center gap-5">
+                      <div className="relative flex-shrink-0">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl blur-lg opacity-75 animate-pulse"></div>
+                        <div className="relative p-3.5 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-inner border border-white/20">
+                          <img src="/pgr-indicator.png" alt="Indicador PGR" className="h-12 w-12 object-contain drop-shadow-md" />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-3 mb-1">
+                          <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight drop-shadow-lg" data-testid="text-page-title">
+                            PGR
+                          </h1>
+                          <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 backdrop-blur-xl shadow-[0_0_15px_rgba(16,185,129,0.2)] px-3 py-1">
+                            <Sparkles className="h-3.5 w-3.5 mr-1.5 text-emerald-400" />
+                            IA Ativa
+                          </Badge>
+                        </div>
+                        <p className="text-white/70 text-lg font-medium tracking-wide">
+                          Programa de Gestão de Riscos Psicossociais
+                        </p>
                       </div>
                     </div>
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <h1 className="text-4xl font-black text-white" data-testid="text-page-title">
-                          PGR
-                        </h1>
-                        <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 backdrop-blur-xl">
-                          <Sparkles className="h-3 w-3 mr-1" />
-                          IA Ativa
+
+                    {/* Description Block */}
+                    <div className="space-y-4 max-w-2xl">
+                      <h2 className="text-2xl font-bold text-white/95 leading-snug">
+                        Análise integrada da condição psicossocial
+                      </h2>
+                      <p className="text-white/70 text-base leading-relaxed border-l-4 border-purple-500/50 pl-4">
+                        Monitoramento contínuo conformidade com a <strong>NR-01</strong> e diretrizes da <strong>OMS</strong>,
+                        identificando fatores de risco e proteção em tempo real.
+                      </p>
+
+                      {/* Trust Badges */}
+                      <div className="flex flex-wrap gap-3 pt-2">
+                        <Badge variant="outline" className="bg-white/5 border-white/10 text-white/70 hover:bg-white/10 transition-all hover:scale-105 cursor-default py-1.5 px-3">
+                          <Shield className="h-3.5 w-3.5 mr-2 text-blue-400" />
+                          NR-01 Compliant
+                        </Badge>
+                        <Badge variant="outline" className="bg-white/5 border-white/10 text-white/70 hover:bg-white/10 transition-all hover:scale-105 cursor-default py-1.5 px-3">
+                          <Heart className="h-3.5 w-3.5 mr-2 text-red-400" />
+                          OMS Guidelines
+                        </Badge>
+                        <Badge variant="outline" className="bg-white/5 border-white/10 text-white/70 hover:bg-white/10 transition-all hover:scale-105 cursor-default py-1.5 px-3">
+                          <Logo size="sm" showText={false} className="h-3.5 w-3.5 mr-2 text-purple-400" />
+                          ISO 45003
                         </Badge>
                       </div>
-                      <p className="text-white/70 text-lg font-medium">
-                        Programa de Gestão de Riscos Psicossociais
-                      </p>
                     </div>
                   </div>
 
-                  {/* Subtitle */}
-                  <div className="space-y-3">
-                    <h2 className="text-2xl font-bold text-white/90">
-                      Análise integrada da condição psicossocial da sua empresa
-                    </h2>
-                    <p className="text-white/70 text-base leading-relaxed">
-                      Conforme a NR-01 e diretrizes da OMS
-                    </p>
-                  </div>
+                  {/* Right Column: Gauge & Period Controls */}
+                  <div className="flex flex-col items-center md:items-end gap-8 min-w-[300px]">
 
-                  {/* Trust Indicators */}
-                  <div className="flex flex-wrap gap-3">
-                    <Badge variant="outline" className="bg-white/5 border-white/20 text-white/80 backdrop-blur-xl">
-                      <Shield className="h-3 w-3 mr-1" />
-                      NR-01 Compliant
-                    </Badge>
-                    <Badge variant="outline" className="bg-white/5 border-white/20 text-white/80 backdrop-blur-xl">
-                      <Heart className="h-3 w-3 mr-1" />
-                      OMS Guidelines
-                    </Badge>
-                    <Badge variant="outline" className="bg-white/5 border-white/20 text-white/80 backdrop-blur-xl">
-                      <Logo size="sm" showText={false} className="h-3 w-3 mr-1" />
-                      ISO 45003
-                    </Badge>
+                    {/* Period Selector (Top Right) */}
+                    <Select value={periodo} onValueChange={setPeriodo}>
+                      <SelectTrigger className="w-[200px] bg-white/5 border-white/10 text-white focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 backdrop-blur-sm h-10 shadow-lg" data-testid="select-periodo">
+                        <Calendar className="h-4 w-4 mr-2 text-purple-300" />
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-900 border-slate-700 text-white">
+                        <SelectItem value="30">Últimos 30 dias</SelectItem>
+                        <SelectItem value="90">Últimos 90 dias</SelectItem>
+                        <SelectItem value="180">Últimos 180 dias</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    {/* Circular Gauge */}
+                    <div className="relative flex items-center justify-center p-4">
+                      {/* Glow effect behind gauge */}
+                      <div className="absolute inset-0 bg-emerald-500/10 blur-[60px] rounded-full animate-pulse-slow"></div>
+
+                      {loading ? (
+                        <Skeleton className="h-64 w-64 rounded-full bg-white/5" />
+                      ) : (
+                        <Suspense fallback={<Skeleton className="h-64 w-64 rounded-full bg-white/5" />}>
+                          <div className="transform transition-transform hover:scale-105 duration-500">
+                            <CircularRiskGaugeLazy
+                              value={indiceGlobal}
+                              totalTests={prgData?.totalTestes || 0}
+                              size="medium"
+                            />
+                          </div>
+                        </Suspense>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Risk Gauge - Energy Efficiency Style */}
-                <div className="flex items-center justify-center">
-                  {loading ? (
-                    <Skeleton className="h-48 w-48 rounded-full bg-white/10" />
-                  ) : (
-                    <Suspense fallback={<Skeleton className="h-48 w-48 rounded-full bg-white/10" />}>
-                      <CircularRiskGaugeLazy
-                        value={indiceGlobal}
-                        totalTests={prgData?.totalTestes || 0}
-                        size="medium"
-                      />
-                    </Suspense>
-                  )}
+                {/* Bottom Section: Filters Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-8 mt-2 border-t border-white/10">
+                  <div className="space-y-2 group">
+                    <label className="text-xs font-semibold text-white/40 uppercase tracking-wider pl-1 group-hover:text-white/60 transition-colors">Setor / Unidade</label>
+                    <Select value={setor} onValueChange={setSetor}>
+                      <SelectTrigger className="bg-white/5 border-white/10 text-white h-12 hover:bg-white/10 hover:border-white/20 transition-all focus:ring-2 focus:ring-blue-500/30" data-testid="select-setor">
+                        <div className="flex items-center overflow-hidden">
+                          <Briefcase className="h-4 w-4 mr-3 text-blue-400/70" />
+                          <SelectValue />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-900 border-slate-700 text-white">
+                        <SelectItem value="todos">Todos os setores</SelectItem>
+                        <SelectItem value="operacional">Operacional</SelectItem>
+                        <SelectItem value="administrativo">Administrativo</SelectItem>
+                        <SelectItem value="comercial">Comercial</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2 group">
+                    <label className="text-xs font-semibold text-white/40 uppercase tracking-wider pl-1 group-hover:text-white/60 transition-colors">Cargo</label>
+                    <Select defaultValue="todos">
+                      <SelectTrigger className="bg-white/5 border-white/10 text-white h-12 hover:bg-white/10 hover:border-white/20 transition-all focus:ring-2 focus:ring-purple-500/30" data-testid="select-cargo">
+                        <div className="flex items-center overflow-hidden">
+                          <Users className="h-4 w-4 mr-3 text-purple-400/70" />
+                          <SelectValue />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-900 border-slate-700 text-white">
+                        <SelectItem value="todos">Todos os cargos</SelectItem>
+                        <SelectItem value="gestao">Gestão</SelectItem>
+                        <SelectItem value="operacional">Operacional</SelectItem>
+                        <SelectItem value="tecnico">Técnico</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2 group">
+                    <label className="text-xs font-semibold text-white/40 uppercase tracking-wider pl-1 group-hover:text-white/60 transition-colors">Tipo de Teste</label>
+                    <Select defaultValue="todos">
+                      <SelectTrigger className="bg-white/5 border-white/10 text-white h-12 hover:bg-white/10 hover:border-white/20 transition-all focus:ring-2 focus:ring-pink-500/30" data-testid="select-teste">
+                        <div className="flex items-center overflow-hidden">
+                          <Activity className="h-4 w-4 mr-3 text-pink-400/70" />
+                          <SelectValue />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-900 border-slate-700 text-white">
+                        <SelectItem value="todos">Todos os testes</SelectItem>
+                        <SelectItem value="clima">Clima Organizacional</SelectItem>
+                        <SelectItem value="estresse">Estresse Ocupacional</SelectItem>
+                        <SelectItem value="burnout">Burnout</SelectItem>
+                        <SelectItem value="qvt">QVT</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </div>
 
-              <div className="absolute top-6 right-6 p-6">
-                <Select value={periodo} onValueChange={setPeriodo}>
-                  <SelectTrigger className="bg-white/5 border-white/20 text-white w-[180px]" data-testid="select-periodo">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="30">Últimos 30 dias</SelectItem>
-                    <SelectItem value="90">Últimos 90 dias</SelectItem>
-                    <SelectItem value="180">Últimos 180 dias</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-white/80">Setor / Unidade</label>
-                <Select value={setor} onValueChange={setSetor}>
-                  <SelectTrigger className="bg-white/5 border-white/20 text-white" data-testid="select-setor">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos os setores</SelectItem>
-                    <SelectItem value="operacional">Operacional</SelectItem>
-                    <SelectItem value="administrativo">Administrativo</SelectItem>
-                    <SelectItem value="comercial">Comercial</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-white/80">Cargo</label>
-                <Select defaultValue="todos">
-                  <SelectTrigger className="bg-white/5 border-white/20 text-white" data-testid="select-cargo">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos os cargos</SelectItem>
-                    <SelectItem value="gestao">Gestão</SelectItem>
-                    <SelectItem value="operacional">Operacional</SelectItem>
-                    <SelectItem value="tecnico">Técnico</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-white/80">Tipo de Teste</label>
-                <Select defaultValue="todos">
-                  <SelectTrigger className="bg-white/5 border-white/20 text-white" data-testid="select-teste">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos os testes</SelectItem>
-                    <SelectItem value="clima">Clima Organizacional</SelectItem>
-                    <SelectItem value="estresse">Estresse Ocupacional</SelectItem>
-                    <SelectItem value="burnout">Burnout</SelectItem>
-                    <SelectItem value="qvt">QVT</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </CardContent>
           </Card>

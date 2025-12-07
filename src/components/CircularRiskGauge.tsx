@@ -62,9 +62,18 @@ const RISK_LEVELS: RiskLevel[] = [
 export default function CircularRiskGauge({ value, totalTests, size = 'medium' }: CircularRiskGaugeProps) {
     const pathRef = useRef<SVGPathElement>(null);
     const [pathLength, setPathLength] = useState(0);
+    const [animatedValue, setAnimatedValue] = useState(0);
 
     const riskLevel = useMemo(() => {
         return RISK_LEVELS.find(level => value >= level.min && value <= level.max) || RISK_LEVELS[4];
+    }, [value]);
+
+    useEffect(() => {
+        // Start animation after a short delay
+        const timer = setTimeout(() => {
+            setAnimatedValue(value);
+        }, 100);
+        return () => clearTimeout(timer);
     }, [value]);
 
     useEffect(() => {
@@ -118,9 +127,16 @@ export default function CircularRiskGauge({ value, totalTests, size = 'medium' }
                 <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
                     <defs>
                         <linearGradient id="gradientGreen" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="#22c55e" /> {/* green-500 */}
-                            <stop offset="100%" stopColor="#4ade80" /> {/* green-400 */}
+                            <stop offset="0%" stopColor="#22c55e" />
+                            <stop offset="100%" stopColor="#4ade80" />
                         </linearGradient>
+                        <filter id="neon-glow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
+                            <feMerge>
+                                <feMergeNode in="coloredBlur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
                     </defs>
 
                     {/* Background Track */}
@@ -129,11 +145,12 @@ export default function CircularRiskGauge({ value, totalTests, size = 'medium' }
                         cy="50"
                         r={radius}
                         fill="none"
-                        stroke="rgba(255,255,255,0.1)"
+                        stroke="rgba(255,255,255,0.05)"
                         strokeWidth={config.strokeWidth}
+                        className="opacity-30"
                     />
 
-                    {/* Progress Circle */}
+                    {/* Progress Circle with Neon Glow */}
                     <circle
                         ref={pathRef as any}
                         cx="50"
@@ -143,16 +160,14 @@ export default function CircularRiskGauge({ value, totalTests, size = 'medium' }
                         stroke={riskLevel.color.replace('text-', '') === 'emerald-400' ? '#34d399' :
                             riskLevel.color.replace('text-', '') === 'green-400' ? '#4ade80' :
                                 riskLevel.color.replace('text-', '') === 'yellow-400' ? '#facc15' :
-                                    riskLevel.color.replace('text-', '') === 'orange-400' ? '#fb923c' : '#f87171'} // Fallback colors based on tailwind classes map is hard, let's use explicit hex or currentColor
-                        // Better strategy: use current color class on the svg element or explicit colors
-                        // Since we need gradient, let's just use the strokeColor from logic or simple class
+                                    riskLevel.color.replace('text-', '') === 'orange-400' ? '#fb923c' : '#f87171'}
                         strokeLinecap="round"
                         strokeDasharray={circumference}
-                        strokeDashoffset={strokeDashoffset}
+                        strokeDashoffset={circumference - (animatedValue / 100) * circumference}
                         strokeWidth={config.strokeWidth}
-                        className={`transition-all duration-1000 ease-out ${riskLevel.color}`}
+                        className={`transition-all duration-[1500ms] ease-out ${riskLevel.color}`}
                         style={{
-                            filter: 'drop-shadow(0 0 8px rgba(34, 197, 94, 0.4))'
+                            filter: `drop-shadow(0 0 10px ${riskLevel.color.replace('text-', '') === 'emerald-400' ? 'rgba(52, 211, 153, 0.8)' : 'currentColor'})`
                         }}
                     />
                 </svg>
