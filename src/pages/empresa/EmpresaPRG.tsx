@@ -1714,7 +1714,7 @@ export default function EmpresaPRG() {
                     {/* Circular Gauge */}
                     <div className="relative flex items-center justify-center p-4">
                       {/* Glow effect behind gauge */}
-                      <div className="absolute inset-0 bg-emerald-500/10 blur-[60px] rounded-full animate-pulse-slow"></div>
+
 
                       {loading ? (
                         <Skeleton className="h-64 w-64 rounded-full bg-white/5" />
