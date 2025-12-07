@@ -265,7 +265,7 @@ router.post('/register/empresa', async (req, res) => {
       return res.status(400).json({ error: 'Invalid request', details: validationResult.error.issues });
     }
 
-    const { nomeEmpresa, emailContato, senha, adminId, configuracoes, ativa } = validationResult.data;
+    const { nomeEmpresa, emailContato, senha, adminId, configuracoes, ativa, cnpj, endereco } = validationResult.data;
 
     // Verificar se já existe empresa com o email
     try {
@@ -288,6 +288,8 @@ router.post('/register/empresa', async (req, res) => {
           nomeEmpresa,
           emailContato,
           senha: hashedPassword,
+          cnpj,
+          endereco,
           adminId: (adminId as any) || null,
           configuracoes: (configuracoes as any) || {},
           ativa: typeof ativa === 'boolean' ? ativa : true,

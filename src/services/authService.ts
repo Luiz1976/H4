@@ -65,6 +65,14 @@ class AuthService {
     return result;
   }
 
+  async criarEmpresa(data: any): Promise<AuthResponse> {
+    const result = await authServiceNew.criarEmpresa(data);
+    if (result.success && result.user) {
+      this.currentUser = result.user;
+    }
+    return result;
+  }
+
   async registrarEmpresa(data: any): Promise<AuthResponse> {
     console.warn('⚠️ registrarEmpresa deve usar o endpoint de aceitar convite');
     return { success: false, message: 'Use o endpoint de convites' };
@@ -87,11 +95,11 @@ class AuthService {
 
   validarSenha(senha: string): { valida: boolean; erros: string[] } {
     const erros: string[] = [];
-    
+
     if (senha.length < 6) {
       erros.push('A senha deve ter pelo menos 6 caracteres');
     }
-    
+
     return {
       valida: erros.length === 0,
       erros

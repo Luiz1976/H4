@@ -117,6 +117,8 @@ export const insertEmpresaSchema = z.object({
   nomeEmpresa: z.string().min(1),
   emailContato: z.string().email(),
   senha: z.string().min(8),
+  cnpj: z.string().optional().nullable(),
+  endereco: z.string().optional().nullable(),
   adminId: z.string().uuid().optional().nullable(),
   configuracoes: z.any().optional(),
   ativa: z.boolean().optional(),

@@ -53,7 +53,7 @@ class AuthServiceNew {
     // Priorizar cookies, fallback para localStorage
     const cookieUser = Cookies.get('currentUser');
     const cookieToken = Cookies.get('authToken');
-    
+
     const storedUser = cookieUser || localStorage.getItem('currentUser');
     const storedToken = cookieToken || localStorage.getItem('authToken');
 
@@ -61,7 +61,7 @@ class AuthServiceNew {
       try {
         this.currentUser = JSON.parse(storedUser);
         this.token = storedToken;
-        
+
         // Migrar para cookies se ainda estiver no localStorage
         if (!cookieUser || !cookieToken) {
           this.saveAuthData(this.currentUser, this.token);
@@ -75,11 +75,11 @@ class AuthServiceNew {
 
   private saveAuthData(user: User, token: string) {
     const cookieConfig = getCookieConfig();
-    
+
     // Salvar nos cookies (preferido para produção)
     Cookies.set('currentUser', JSON.stringify(user), cookieConfig);
     Cookies.set('authToken', token, cookieConfig);
-    
+
     // Manter no localStorage como fallback
     localStorage.setItem('currentUser', JSON.stringify(user));
     localStorage.setItem('authToken', token);
@@ -88,7 +88,7 @@ class AuthServiceNew {
   private async makeRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${NORMALIZED_BASE}${endpoint}`;
     const canFallback = Boolean(FALLBACK_BASE && FALLBACK_BASE !== NORMALIZED_BASE);
-    
+
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -104,7 +104,7 @@ class AuthServiceNew {
     console.log(`🔄 [AuthService] NORMALIZED_BASE: ${NORMALIZED_BASE}`);
     console.log(`🔄 [AuthService] FALLBACK_BASE: ${FALLBACK_BASE}`);
     console.log(`🔄 [AuthService] Headers:`, headers);
-    
+
     try {
       const response = await fetch(url, {
         ...options,
@@ -152,7 +152,7 @@ class AuthServiceNew {
               console.warn(`✅ [AuthService] Sucesso via mesma origem: ${relativeUrl}`);
               return relData;
             }
-          } catch (_) {}
+          } catch (_) { }
         }
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
@@ -167,7 +167,7 @@ class AuthServiceNew {
       return data;
     } catch (error) {
       console.error(`❌ [AuthService] Erro na requisição para ${url}:`, error);
-      
+
       // Tentar fallback automaticamente se houver falha de conectividade
       const isFetchFail = error instanceof TypeError && (error.message.includes('Failed to fetch') || error.message.includes('NetworkError'));
       if (isFetchFail && canFallback) {
@@ -205,9 +205,9 @@ class AuthServiceNew {
             console.warn(`✅ [AuthService] Sucesso via mesma origem: ${relativeUrl}`);
             return relData;
           }
-        } catch (_) {}
+        } catch (_) { }
       }
-      
+
       if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
         console.error(`🚨 [AuthService] Erro de conectividade - verifique se o servidor está rodando em ${NORMALIZED_BASE}`);
         console.error(`💡 [AuthService] Possíveis soluções:`);
@@ -222,8 +222,55 @@ class AuthServiceNew {
 
         throw detailedError;
       }
-      
+
       throw error;
+    }
+  }
+
+  async criarEmpresa(data: any): Promise<AuthResponse> {
+    try {
+      // Map frontend data to backend schema
+      const payload = {
+        nomeEmpresa: data.nome,
+        emailContato: data.email ? data.email.trim() : '',
+        senha: data.senha,
+        cnpj: data.cnpj,
+        endereco: data.endereco,
+        configuracoes: {
+          nome_responsavel: data.nome_responsavel,
+          cargo_responsavel: data.cargo_responsavel,
+          telefone: data.telefone,
+          cidade: data.cidade,
+          estado: data.estado,
+          cep: data.cep
+        }
+      };
+
+      const response = await this.makeRequest<{ token: string; user: any }>('/api/auth/register/empresa', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
+      const user: User = {
+        id: response.user.id,
+        email: response.user.email || response.user.emailContato,
+        name: response.user.nome || response.user.nomeEmpresa,
+        role: 'empresa',
+        redirectUrl: '/empresa',
+        empresaId: response.user.id,
+      };
+
+      this.currentUser = user;
+      this.token = response.token;
+      this.saveAuthData(user, response.token);
+
+      return { success: true, user, token: response.token };
+    } catch (error) {
+      console.error('Erro ao criar empresa:', error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Erro ao criar empresa'
+      };
     }
   }
 
@@ -249,8 +296,8 @@ class AuthServiceNew {
       return { success: true, user, token: response.token };
     } catch (error) {
       console.error('Erro ao registrar admin:', error);
-      return { 
-        success: false, 
+      return {
+        success: false,
         message: error instanceof Error ? error.message : 'Erro ao registrar administrador'
       };
     }
@@ -292,8 +339,8 @@ class AuthServiceNew {
       return { success: true, user, token: response.token };
     } catch (error) {
       console.error('Erro no login:', error);
-      return { 
-        success: false, 
+      return {
+        success: false,
         message: error instanceof Error ? error.message : 'E-mail ou senha inválidos'
       };
     }
@@ -306,15 +353,15 @@ class AuthServiceNew {
   private clearAuth(): void {
     this.currentUser = null;
     this.token = null;
-    
+
     // Limpar cookies
-    Cookies.remove('currentUser', { 
-      domain: import.meta.env.PROD ? '.humaniqai.com.br' : undefined 
+    Cookies.remove('currentUser', {
+      domain: import.meta.env.PROD ? '.humaniqai.com.br' : undefined
     });
-    Cookies.remove('authToken', { 
-      domain: import.meta.env.PROD ? '.humaniqai.com.br' : undefined 
+    Cookies.remove('authToken', {
+      domain: import.meta.env.PROD ? '.humaniqai.com.br' : undefined
     });
-    
+
     // Limpar localStorage como fallback
     localStorage.removeItem('currentUser');
     localStorage.removeItem('authToken');
