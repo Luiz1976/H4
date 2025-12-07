@@ -405,7 +405,7 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, corsHeaders);
     const now = new Date().toISOString();
     const analise = {
-      indiceGeralBemEstar: 72,
+      indiceGeralBemEstar: 82,
       totalColaboradores: 95,
       totalTestesRealizados: 320,
       testesUltimos30Dias: 88,
@@ -545,38 +545,7 @@ const server = http.createServer((req, res) => {
           pontuacaoTotal: 210,
           dataRealizacao: toISO(new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000)),
           metadados: {
-            tipo_teste: 'clima-organizacional',
-            teste_nome: 'HumaniQ 360 – Clima Organizacional, Bem-Estar Psicológico e Justiça Corporativa',
-            versao_teste: '1.0',
-            timestamp_processamento: toISO(now),
-            pontuacoes_dimensoes: {
-              comunicacao: 72,
-              lideranca: 68,
-              relacionamento: 70,
-              reconhecimento: 65,
-              desenvolvimento: 62,
-              condicoes: 60,
-              equilibrio: 66,
-              engajamento: 74
-            },
-            analise_completa: {
-              pontuacaoGeral: 210,
-              mediaGeral: 3.75,
-              classificacaoGeral: 'Clima Positivo',
-              nivelGeral: 'bom'
-            }
-          }
-        };
-      } else {
-        // Genérico
-        resultado = {
-          id: last,
-          pontuacaoTotal: 75,
-          dataRealizacao: toISO(now),
-          metadados: {
-            teste_nome: 'Resultado de Teste',
-            versao_teste: '1.0',
-            timestamp_processamento: toISO(now)
+            tipo_teste: 'clima-organizacional'
           }
         };
       }

@@ -107,6 +107,19 @@ router.get('/colaboradores', authenticateToken, requireEmpresa, async (req: Auth
           situacaoPsicossocial.totalTestes = totalTestes;
           situacaoPsicossocial.ultimoTeste = ultimosResultados[0].dataRealizacao.toISOString();
 
+          // Lista de dimensões negativas (onde MENOR é MELHOR)
+          const dimensoesNegativas = new Set([
+            'demanda-psicologica',
+            'esforco-exigido',
+            'hipercomprometimento',
+            'conflito_trabalho_familia',
+            'assedio_violencia',
+            'esgotamento_profissional',
+            'demandas_trabalho',
+            'estresse',        // Adicionado para garantir cobertura
+            'burnout'          // Adicionado para garantir cobertura
+          ]);
+
           // Agregar análise de todos os resultados
           const dimensoesAgregadas: Record<string, { soma: number; total: number }> = {};
           const indicadores: Array<{ nome: string; valor: string; nivel: string }> = [];
@@ -128,8 +141,26 @@ router.get('/colaboradores', authenticateToken, requireEmpresa, async (req: Auth
                     if (!dimensoesAgregadas[dimensaoId]) {
                       dimensoesAgregadas[dimensaoId] = { soma: 0, total: 0 };
                     }
-                    // QVT usa percentual diretamente
-                    const valor = dim.percentual || dim.pontuacao * 20 || 0; // Converter pontuação para percentual
+
+                    let valor = dim.percentual;
+                    if (valor === undefined) {
+                      // Normalizar globalmente se estiver em escala 1-5 (assumindo <= 5 é escala)
+                      if (dim.pontuacao <= 5) {
+                        valor = (dim.pontuacao / 5) * 100;
+                      } else {
+                        valor = dim.pontuacao; // Assume já 0-100 ou outra escala
+                        // Para QVT, pontuação costuma ser maior, vamos manter lógica anterior se necessário
+                        // Mas a lógica anterior (pontuacao * 20) era para 1-5.
+                      }
+                    }
+                    // Fallback para lógica antiga se não tiver percentual e for > 5 (ex: escala 0-100 direta ou soma)
+                    if (valor === undefined) valor = dim.pontuacao || 0;
+
+                    // Inverter se for negativo
+                    if (dimensoesNegativas.has(dimensaoId)) {
+                      valor = Math.max(0, 100 - valor);
+                    }
+
                     dimensoesAgregadas[dimensaoId].soma += valor;
                     dimensoesAgregadas[dimensaoId].total++;
                   }
@@ -140,9 +171,25 @@ router.get('/colaboradores', authenticateToken, requireEmpresa, async (req: Auth
                   if (!dimensoesAgregadas[dimensaoId]) {
                     dimensoesAgregadas[dimensaoId] = { soma: 0, total: 0 };
                   }
-                  // Tentar diferentes campos de pontuação
-                  const valor = dados.percentual || (dados.media * 20) || (dados.pontuacao * 20) || 0;
-                  dimensoesAgregadas[dimensaoId].soma += valor;
+
+                  let valor = dados.percentual;
+
+                  // Normalização Global
+                  if (valor === undefined) {
+                    const raw = dados.media || dados.pontuacao || 0;
+                    if (raw <= 5 && raw > 0) {
+                      valor = (raw / 5) * 100;
+                    } else {
+                      valor = raw;
+                    }
+                  }
+
+                  // Inverter se for negativo
+                  if (dimensoesNegativas.has(dimensaoId)) {
+                    valor = Math.max(0, 100 - (valor || 0));
+                  }
+
+                  dimensoesAgregadas[dimensaoId].soma += (valor || 0);
                   dimensoesAgregadas[dimensaoId].total++;
                 });
               }
