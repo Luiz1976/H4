@@ -1650,12 +1650,7 @@ export default function EmpresaPRG() {
 
                     {/* Branding Row */}
                     <div className="flex items-center gap-5">
-                      <div className="relative flex-shrink-0">
-                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl blur-lg opacity-75 animate-pulse"></div>
-                        <div className="relative p-3.5 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-inner border border-white/20">
-                          <img src="/pgr-indicator.png" alt="Indicador PGR" className="h-12 w-12 object-contain drop-shadow-md" />
-                        </div>
-                      </div>
+
                       <div>
                         <div className="flex items-center gap-3 mb-1">
                           <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight drop-shadow-lg" data-testid="text-page-title">
