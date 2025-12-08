@@ -124,19 +124,12 @@ export default function CircularRiskGauge({ value, totalTests, size = 'medium' }
             <div className={`relative ${config.container} flex items-center justify-center`}>
 
                 {/* Main SVG Gauge */}
-                <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
+                <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90 overflow-visible">
                     <defs>
                         <linearGradient id="gradientGreen" x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" stopColor="#22c55e" />
                             <stop offset="100%" stopColor="#4ade80" />
                         </linearGradient>
-                        <filter id="neon-glow" x="-50%" y="-50%" width="200%" height="200%">
-                            <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
-                            <feMerge>
-                                <feMergeNode in="coloredBlur" />
-                                <feMergeNode in="SourceGraphic" />
-                            </feMerge>
-                        </filter>
                     </defs>
 
                     {/* Background Track */}
