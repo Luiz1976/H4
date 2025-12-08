@@ -737,7 +737,7 @@ Lembre-se: a lei protege quem se protege. Aja preventivamente, sempre.
   },
   {
     id: 2,
-    slug: "inteligência-emocional-liderança",
+    slug: "inteligencia-emocional-lideranca",
     título: "Inteligência Emocional Aplicada à Liderança",
     subtítulo: "Autoconsciência, Empatia e Autorregulação",
     descrição: "Desenvolva autoconsciência, empatia e autorregulação emocional, essenciais para uma liderança equilibrada e humana.",
@@ -2090,7 +2090,7 @@ Lembre-se: Você será julgado pelas decisões que toma. Tome-as com consciênci
   },
   {
     id: 3,
-    slug: "comunicação-não-violenta",
+    slug: "comunicacao-nao-violenta",
     título: "Comunicação Não Violenta (CNV)",
     subtítulo: "Técnicas de Comunicação Empática e Construtiva",
     descrição: "Aprimore a escuta ativa e o diálogo construtivo através da Comunicação Não Violenta para reduzir conflitos e criar ambientes de segurança psicológica.",
@@ -3156,7 +3156,7 @@ Lembre-se: Autenticidade não é falta de educação. É honestidade com respeit
   },
   {
     id: 4,
-    slug: "gestão-riscos-psicossociais-saúde-mental",
+    slug: "gestao-riscos-psicossociais-saude-mental",
     título: "Gestão de Riscos Psicossociais e Saúde Mental",
     subtítulo: "Identificação, Prevenção e Intervenção em Saúde Mental Ocupacional",
     descrição: "Reconheça sinais de estresse, Burnout e outros transtornos mentais, aprenda a intervir adequadamente e crie ambientes de trabalho psicologicamente saudáveis.",
@@ -4516,7 +4516,7 @@ Lembre-se: Colaboradores saudáveis = Organização saudável = Resultados suste
   },
   {
     id: 5,
-    slug: "prevenção-assedio-moral-sexual",
+    slug: "prevencao-assedio-moral-sexual",
     título: "Prevenção e Combate ao Assédio Moral e Sexual",
     subtítulo: "Compliance, Ética e Proteção Legal",
     descrição: "Compreenda as definições legais, aprenda a prevenir, identificar e agir adequadamente em casos de assédio moral e sexual conforme Lei 14.457/22.",
@@ -5875,7 +5875,7 @@ Lembre-se: Lei não tolera omissão. Conhecimento e ação salvam organizações
   },
   {
     id: 6,
-    slug: "gestão-estresse-qualidade-vida",
+    slug: "gestao-estresse-qualidade-vida",
     título: "Gestão do Estresse e Qualidade de Vida no Trabalho",
     subtítulo: "Autocuidado, Resiliência e Bem-Estar Sustentável",
     descrição: "Promova autocuidado, desenvolva resiliência e crie estratégias para prevenir o esgotamento profissional e melhorar qualidade de vida.",
@@ -7315,7 +7315,7 @@ Lembre-se: Equipe saudável = Resultados saudáveis. Cuide das pessoas e elas cu
   },
   {
     id: 7,
-    slug: "liderança-humanizada-clima-organizacional",
+    slug: "lideranca-humanizada-clima-organizacional",
     título: "Liderança Humanizada e Clima Organizacional",
     subtítulo: "Criando Ambientes de Alta Performance e Bem-Estar",
     descrição: "Desenvolva habilidades de liderança humanizada para criar clima organizacional saudável, engajamento e alta performance sustentável.",
@@ -8616,7 +8616,7 @@ Lembre-se: Mudança e constante. Resiliência e construída. Liderança humaniza
   },
   {
     id: 8,
-    slug: "diversidade-inclusão-respeito",
+    slug: "diversidade-inclusao-respeito",
     título: "Diversidade, Inclusão e Respeito nas Relações de Trabalho",
     subtítulo: "Construindo Ambientes Equitativos e Inclusivos",
     descrição: "Compreenda a importância da diversidade, aprenda a promover inclusão genuína e crie ambiente de respeito onde todas as pessoas possam prosperar.",
