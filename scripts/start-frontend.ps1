@@ -175,7 +175,7 @@ function Start-FrontendDevelopment {
         
         # Usar Start-Process para melhor controle
         $processInfo = New-Object System.Diagnostics.ProcessStartInfo
-        $processInfo.FileName = "npm"
+        $processInfo.FileName = "npm.cmd"
         $processInfo.Arguments = "run dev -- --port 5000 --host 0.0.0.0 --strictPort"
         $processInfo.WorkingDirectory = $projectRoot
         $processInfo.UseShellExecute = $false
@@ -186,6 +186,8 @@ function Start-FrontendDevelopment {
         $process = New-Object System.Diagnostics.Process
         $process.StartInfo = $processInfo
         
+        $process.Start() | Out-Null
+
         # Registrar início
         Write-StartupLog "Frontend iniciado com sucesso na porta 5000" "SUCCESS"
         Write-StartupLog "Processo PID: $($process.Id)"
@@ -197,7 +199,6 @@ function Start-FrontendDevelopment {
         }
         
         # Aguardar processo
-        $process.Start() | Out-Null
         $process.WaitForExit()
         
         # Registrar término

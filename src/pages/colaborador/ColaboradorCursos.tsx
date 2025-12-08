@@ -69,10 +69,14 @@ export default function ColaboradorCursos() {
   const cursosDisponiveis = responseCursos?.cursos || [];
   const cursosLiberados = cursosDisponiveis.filter((c) => {
     const concluidoPorCertificado = certificados.some((cert) => cert.cursoSlug === c.slug);
-    const concluidoPorAvaliacao = !!c.dataConclusao;
-    return c.disponivel && !concluidoPorCertificado && !concluidoPorAvaliacao;
+    // Mostrar cursos mesmo se concluídos por avaliação, para evitar que sumam se não tiverem certificado ainda
+    return c.disponivel && !concluidoPorCertificado;
   });
-  const cursosConcluidos = certificados.length;
+  const cursosConcluidosSet = new Set(certificados.map(c => c.cursoSlug));
+  cursosDisponiveis.forEach(c => {
+    if (c.dataConclusao) cursosConcluidosSet.add(c.slug);
+  });
+  const cursosConcluidos = cursosConcluidosSet.size;
 
   // Calcular tempo total de estudo (estimado com base no progresso)
   const tempoTotalEstudo = progressoCursos.reduce((total, progresso) => {
@@ -262,9 +266,16 @@ export default function ColaboradorCursos() {
                           })()}
                         </div>
                         <div className="flex flex-col gap-2">
-                          <Badge variant="outline" className="w-fit text-xs">
-                            {(() => { const info = getCursoBySlug(curso.slug) as Curso | undefined; const cat = curso.categoria || info?.['categoria'] || ''; return normalizarCategoria(cat); })()}
-                          </Badge>
+                          <div className="flex gap-2">
+                            <Badge variant="outline" className="w-fit text-xs">
+                              {(() => { const info = getCursoBySlug(curso.slug) as Curso | undefined; const cat = curso.categoria || info?.['categoria'] || ''; return normalizarCategoria(cat); })()}
+                            </Badge>
+                            {!!curso.dataConclusao && (
+                              <Badge variant="secondary" className="w-fit text-xs bg-green-100 text-green-700 border-green-200">
+                                Concluído
+                              </Badge>
+                            )}
+                          </div>
                           <Badge variant="outline" className={`w-fit text-xs ${getNivelColor(curso.nivel)}`}>
                             {(() => { const info = getCursoBySlug(curso.slug) as Curso | undefined; const niv = curso.nivel || info?.['nível'] || ''; return normalizarNivel(niv); })()}
                           </Badge>

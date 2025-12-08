@@ -5,7 +5,12 @@ import { authenticateToken, requireAdmin, AuthRequest } from '../middleware/auth
 import { parseDateSeguro } from '../utils/dateUtils';
 import logger from '../utils/logger';
 
+import { gte } from 'drizzle-orm';
+
 const router = express.Router();
+
+// Data de corte para "zerar" as métricas (08/12/2025)
+const DATA_INICIO_METRICAS = new Date('2025-12-08T00:00:00.000Z');
 
 // Admin: Dashboard executivo com métricas agregadas de todas as empresas
 router.get('/dashboard', authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
@@ -19,7 +24,7 @@ router.get('/dashboard', authenticateToken, requireAdmin, async (req: AuthReques
     let todasEmpresas: any[] = [];
     const empresasQueryStart = Date.now();
     try {
-      todasEmpresas = await db.select().from(empresas);
+      todasEmpresas = await db.select().from(empresas).where(gte(empresas.createdAt, DATA_INICIO_METRICAS));
     } catch (err) {
       logger.warn('⚠️ [ADMIN DASHBOARD] Falha ao buscar empresas', { error: (err as any)?.message });
       todasEmpresas = [];
@@ -38,7 +43,7 @@ router.get('/dashboard', authenticateToken, requireAdmin, async (req: AuthReques
     let todosColaboradores: any[] = [];
     const colaboradoresQueryStart = Date.now();
     try {
-      todosColaboradores = await db.select().from(colaboradores);
+      todosColaboradores = await db.select().from(colaboradores).where(gte(colaboradores.createdAt, DATA_INICIO_METRICAS));
     } catch (err) {
       logger.warn('⚠️ [ADMIN DASHBOARD] Falha ao buscar colaboradores', { error: (err as any)?.message });
       todosColaboradores = [];
@@ -61,7 +66,8 @@ router.get('/dashboard', authenticateToken, requireAdmin, async (req: AuthReques
           dataRealizacao: resultados.dataRealizacao,
           metadados: resultados.metadados,
         })
-        .from(resultados);
+        .from(resultados)
+        .where(gte(resultados.dataRealizacao, DATA_INICIO_METRICAS));
     } catch (err) {
       logger.warn('⚠️ [ADMIN DASHBOARD] Falha ao buscar resultados', { error: (err as any)?.message });
       todosResultados = [];
@@ -114,10 +120,10 @@ router.get('/dashboard', authenticateToken, requireAdmin, async (req: AuthReques
     try {
       empresasComReceita = empresasAtivas.map(empresa => {
         const colabsEmpresa = todosColaboradores.filter(c => c.empresaId === empresa.id).length;
-        
+
         let plano = 'Essencial';
         let valor = 15;
-        
+
         if (colabsEmpresa > 50 && colabsEmpresa <= 200) {
           plano = 'Profissional';
           valor = 25;
@@ -125,11 +131,11 @@ router.get('/dashboard', authenticateToken, requireAdmin, async (req: AuthReques
           plano = 'Enterprise';
           valor = 35;
         }
-        
+
         const receitaEmpresa = colabsEmpresa * valor;
         receitaTotal += receitaEmpresa;
         distribuicaoPlanos[plano as keyof typeof distribuicaoPlanos]++;
-        
+
         return { empresaId: empresa.id, receita: receitaEmpresa, plano, colaboradores: colabsEmpresa };
       });
     } catch (err) {
@@ -144,7 +150,7 @@ router.get('/dashboard', authenticateToken, requireAdmin, async (req: AuthReques
     const ticketMedio = empresasAtivas.length > 0 ? Math.round(receitaTotal / empresasAtivas.length) : 0;
 
     // Crescimento MRR (simulado baseado em empresas novas)
-    const crescimentoMRR = empresasNovasEsteMes.length > 0 
+    const crescimentoMRR = empresasNovasEsteMes.length > 0
       ? Number(((empresasNovasEsteMes.length / Math.max(empresasAtivas.length, 1)) * 100).toFixed(1))
       : 0;
 
@@ -154,10 +160,11 @@ router.get('/dashboard', authenticateToken, requireAdmin, async (req: AuthReques
     let checkoutsIniciados = 0;
     let comprasFinalizadas = 0;
     try {
-      visitantesLanding = Math.max(todosColaboradores.length * 5, empresasAtivas.length * 50, 200);
-      testesDemonstracao = Math.floor(visitantesLanding * 0.15);
-      checkoutsIniciados = Math.floor(testesDemonstracao * 0.4);
-      comprasFinalizadas = empresasAtivas.length;
+      // Remover simulações de piso (ex: 200) para zerar se não houver dados novos
+      visitantesLanding = Math.max(todosColaboradores.length * 5, empresasAtivas.length * 50, 0);
+      testesDemonstracao = Math.floor(visitantesLanding * 0.15); // Taxa estimada
+      checkoutsIniciados = Math.floor(testesDemonstracao * 0.4); // Taxa estimada
+      comprasFinalizadas = empresasAtivas.length; // Real
     } catch (err) {
       logger.warn('📈 [ADMIN DASHBOARD] Erro ao calcular métricas de conversão', { error: (err as any)?.message });
       visitantesLanding = 0;
@@ -200,12 +207,12 @@ router.get('/dashboard', authenticateToken, requireAdmin, async (req: AuthReques
       for (let i = 5; i >= 0; i--) {
         const mesData = new Date(agora.getFullYear(), agora.getMonth() - i, 1);
         const mesFim = new Date(agora.getFullYear(), agora.getMonth() - i + 1, 1);
-        
+
         const empresasMes = todasEmpresas.filter(e => {
           const dt = parseDateSeguro(e?.createdAt as any);
           return dt ? dt < mesFim && e.ativa : false;
         });
-        
+
         let receitaMes = 0;
         empresasMes.forEach(empresa => {
           const colabs = todosColaboradores.filter(c => c.empresaId === empresa.id).length;
@@ -214,7 +221,7 @@ router.get('/dashboard', authenticateToken, requireAdmin, async (req: AuthReques
           else if (colabs > 200) valor = 35;
           receitaMes += colabs * valor;
         });
-        
+
         receitaMensal.push({
           mes: mesData.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }),
           receita: receitaMes,
@@ -302,6 +309,65 @@ router.get('/dashboard', authenticateToken, requireAdmin, async (req: AuthReques
   } catch (error) {
     logger.warn('❌ [ADMIN DASHBOARD] Erro ao calcular métricas', { error: (error as any)?.message });
     res.status(500).json({ error: 'Erro ao carregar dashboard executivo' });
+  }
+});
+
+// Maintenance: Fix Slugs in Production
+router.post('/maintenance/fix-slugs', authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
+  try {
+    logger.info('🔧 [ADMIN MAINTENANCE] Starting slug normalization...');
+    const result = { migrated: 0, deleted: 0, details: [] as string[] };
+
+    // Mappings of accented -> normalized
+    const MAPPINGS = {
+      "comunicação-não-violenta": "comunicacao-nao-violenta",
+      "diversidade-inclusão-respeito": "diversidade-inclusao-respeito",
+      "gestão-estresse-qualidade-vida": "gestao-estresse-qualidade-vida",
+      "gestão-riscos-psicossociais-saúde-mental": "gestao-riscos-psicossociais-saude-mental",
+      "inteligência-emocional-liderança": "inteligencia-emocional-lideranca",
+      "liderança-humanizada-clima-organizacional": "lideranca-humanizada-clima-organizacional",
+      "prevenção-assedio-moral-sexual": "prevencao-assedio-moral-sexual"
+    };
+
+    // Need to import cursoDisponibilidade schema here if not imported, or use string refs if raw SQL
+    // Using import from schema
+    const { cursoDisponibilidade } = await import('../../shared/schema');
+    const { eq, and } = await import('drizzle-orm');
+
+    for (const [accented, normalized] of Object.entries(MAPPINGS)) {
+      const records = await db.select().from(cursoDisponibilidade).where(eq(cursoDisponibilidade.cursoId, accented));
+
+      if (records.length > 0) {
+        for (const record of records) {
+          // Check duplicate
+          const [existing] = await db.select()
+            .from(cursoDisponibilidade)
+            .where(and(
+              eq(cursoDisponibilidade.cursoId, normalized),
+              eq(cursoDisponibilidade.colaboradorId, record.colaboradorId)
+            ))
+            .limit(1);
+
+          if (existing) {
+            await db.delete(cursoDisponibilidade).where(eq(cursoDisponibilidade.id, record.id));
+            result.deleted++;
+            result.details.push(`Deleted duplicate for ${record.colaboradorId} (${accented})`);
+          } else {
+            await db.update(cursoDisponibilidade)
+              .set({ cursoId: normalized })
+              .where(eq(cursoDisponibilidade.id, record.id));
+            result.migrated++;
+            result.details.push(`Migrated ${record.colaboradorId} (${accented} -> ${normalized})`);
+          }
+        }
+      }
+    }
+
+    logger.info('✅ [ADMIN MAINTENANCE] Slug normalization complete', result);
+    res.json(result);
+  } catch (error) {
+    logger.error('❌ [ADMIN MAINTENANCE] Error normalizing slugs', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
