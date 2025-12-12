@@ -57,7 +57,7 @@ export function SettingsView() {
             <RotateCcw className="w-4 h-4" />
             Resetar
           </Button>
-          <Button variant="instagram" className="gap-2">
+          <Button variant="default" className="gap-2">
             <Save className="w-4 h-4" />
             Salvar
           </Button>

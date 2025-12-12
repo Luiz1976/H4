@@ -15,7 +15,7 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-secondary hover:text-secondary-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        instagram: "gradient-instagram text-white hover:opacity-90 hover:shadow-lg",
+        
         success: "bg-success text-accent-foreground hover:bg-success/90 hover:shadow-lg hover:shadow-success/20",
         glow: "bg-primary text-primary-foreground glow-primary hover:shadow-xl hover:shadow-primary/30",
       },

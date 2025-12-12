@@ -2,7 +2,6 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, 
-  Instagram, 
   Radio, 
   MessageSquare, 
   Settings, 
@@ -18,7 +17,6 @@ interface SidebarProps {
 
 const menuItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "instagram", label: "Instagram", icon: Instagram },
   { id: "listener", label: "Escuta Ativa", icon: Radio },
   { id: "templates", label: "Templates", icon: MessageSquare },
   { id: "logs", label: "Logs", icon: Activity },

@@ -90,7 +90,7 @@ export function ListenerView() {
               </div>
             </div>
             <Button
-              variant={isActive ? "destructive" : "instagram"}
+              variant={isActive ? "destructive" : "default"}
               size="lg"
               onClick={() => setIsActive(!isActive)}
               className="gap-2"

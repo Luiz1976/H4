@@ -86,7 +86,7 @@ export function TemplatesView() {
           <h1 className="text-3xl font-bold">Templates de Comentários</h1>
           <p className="text-muted-foreground mt-1">Geração inteligente com técnicas de NLP</p>
         </div>
-        <Button variant="instagram" className="gap-2">
+        <Button variant="default" className="gap-2">
           <Plus className="w-4 h-4" />
           Novo Template
         </Button>
