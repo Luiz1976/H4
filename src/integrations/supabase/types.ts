@@ -14,7 +14,257 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      linkedin_accounts: {
+        Row: {
+          access_token: string
+          avatar_url: string | null
+          connected_at: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          linkedin_user_id: string | null
+          name: string | null
+          profile_url: string | null
+          refresh_token: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          avatar_url?: string | null
+          connected_at?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          linkedin_user_id?: string | null
+          name?: string | null
+          profile_url?: string | null
+          refresh_token?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          avatar_url?: string | null
+          connected_at?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          linkedin_user_id?: string | null
+          name?: string | null
+          profile_url?: string | null
+          refresh_token?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      linkedin_activity_logs: {
+        Row: {
+          account_id: string | null
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          log_type: string
+          message: string
+        }
+        Insert: {
+          account_id?: string | null
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          log_type: string
+          message: string
+        }
+        Update: {
+          account_id?: string | null
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          log_type?: string
+          message?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "linkedin_activity_logs_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "linkedin_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      linkedin_listening: {
+        Row: {
+          account_id: string | null
+          action_taken: string | null
+          actioned_at: string | null
+          created_at: string
+          detected_at: string
+          detected_topic: string | null
+          id: string
+          relevance_score: number | null
+          response_content: string | null
+          source_author: string | null
+          source_content: string | null
+          source_url: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          action_taken?: string | null
+          actioned_at?: string | null
+          created_at?: string
+          detected_at?: string
+          detected_topic?: string | null
+          id?: string
+          relevance_score?: number | null
+          response_content?: string | null
+          source_author?: string | null
+          source_content?: string | null
+          source_url?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          action_taken?: string | null
+          actioned_at?: string | null
+          created_at?: string
+          detected_at?: string
+          detected_topic?: string | null
+          id?: string
+          relevance_score?: number | null
+          response_content?: string | null
+          source_author?: string | null
+          source_content?: string | null
+          source_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "linkedin_listening_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "linkedin_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      linkedin_posts: {
+        Row: {
+          account_id: string | null
+          content: string
+          created_at: string
+          engagement_comments: number | null
+          engagement_likes: number | null
+          engagement_shares: number | null
+          id: string
+          image_index: number | null
+          linkedin_post_id: string | null
+          published_at: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          content: string
+          created_at?: string
+          engagement_comments?: number | null
+          engagement_likes?: number | null
+          engagement_shares?: number | null
+          id?: string
+          image_index?: number | null
+          linkedin_post_id?: string | null
+          published_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          content?: string
+          created_at?: string
+          engagement_comments?: number | null
+          engagement_likes?: number | null
+          engagement_shares?: number | null
+          id?: string
+          image_index?: number | null
+          linkedin_post_id?: string | null
+          published_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "linkedin_posts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "linkedin_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      linkedin_settings: {
+        Row: {
+          account_id: string | null
+          auto_comment_enabled: boolean | null
+          auto_post_enabled: boolean | null
+          auto_promote_enabled: boolean | null
+          created_at: string
+          id: string
+          last_post_at: string | null
+          listening_keywords: string[] | null
+          min_posts_ready: number | null
+          next_scheduled_post: string | null
+          post_end_hour: number | null
+          post_interval_minutes: number | null
+          post_start_hour: number | null
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          auto_comment_enabled?: boolean | null
+          auto_post_enabled?: boolean | null
+          auto_promote_enabled?: boolean | null
+          created_at?: string
+          id?: string
+          last_post_at?: string | null
+          listening_keywords?: string[] | null
+          min_posts_ready?: number | null
+          next_scheduled_post?: string | null
+          post_end_hour?: number | null
+          post_interval_minutes?: number | null
+          post_start_hour?: number | null
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          auto_comment_enabled?: boolean | null
+          auto_post_enabled?: boolean | null
+          auto_promote_enabled?: boolean | null
+          created_at?: string
+          id?: string
+          last_post_at?: string | null
+          listening_keywords?: string[] | null
+          min_posts_ready?: number | null
+          next_scheduled_post?: string | null
+          post_end_hour?: number | null
+          post_interval_minutes?: number | null
+          post_start_hour?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "linkedin_settings_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: true
+            referencedRelation: "linkedin_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
