@@ -1,22 +1,43 @@
 import { StatCard } from "./StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  MessageSquare, 
-  Eye, 
-  TrendingUp, 
+import {
+  MessageSquare,
+  Eye,
+  TrendingUp,
   Users,
   Activity,
   Zap
 } from "lucide-react";
 
+import { useLinkedIn } from "@/hooks/useLinkedIn";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
 export function DashboardView() {
-  const recentActivity = [
-    { id: 1, type: "comment", text: "Comentário postado em @empresa_rh", time: "2 min atrás", status: "success" },
-    { id: 2, type: "scan", text: "Escaneados 15 posts com #NR01", time: "5 min atrás", status: "info" },
-    { id: 3, type: "comment", text: "Comentário postado em @saude_trabalho", time: "15 min atrás", status: "success" },
-    { id: 4, type: "scan", text: "Escaneados 8 posts com #riscospsicossociais", time: "22 min atrás", status: "info" },
-    { id: 5, type: "limit", text: "Limite diário atingido - pausando", time: "30 min atrás", status: "warning" },
-  ];
+  const { detections, loading: liLoading } = useLinkedIn();
+
+  // Calculate stats
+  const today = new Date().toDateString();
+  const commentsToday = detections.filter(d =>
+    d.action_taken === "commented" && new Date(d.actioned_at || d.detected_at).toDateString() === today
+  ).length;
+
+  const scansToday = detections.filter(d =>
+    new Date(d.detected_at).toDateString() === today
+  ).length;
+
+  const leads = detections.filter(d => (d.relevance_score || 0) >= 0.7).length;
+
+  // Create Recent Activity from detections
+  const recentActivity = detections.slice(0, 5).map(d => ({
+    id: d.id,
+    type: d.action_taken === "commented" ? "comment" : "scan",
+    text: d.action_taken === "commented"
+      ? `Comentário em post sobre ${d.detected_topic}`
+      : `Detectado: ${d.detected_topic} (${d.source_author})`,
+    time: formatDistanceToNow(new Date(d.detected_at), { addSuffix: true, locale: ptBR }),
+    status: d.action_taken === "commented" ? "success" : "info" as "success" | "info" | "warning"
+  }));
 
   return (
     <div className="space-y-8">
@@ -30,7 +51,7 @@ export function DashboardView() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Comentários Hoje"
-          value="8"
+          value={commentsToday.toString()}
           change="+12% vs ontem"
           changeType="positive"
           icon={MessageSquare}
@@ -39,7 +60,7 @@ export function DashboardView() {
         />
         <StatCard
           title="Posts Escaneados"
-          value="156"
+          value={scansToday.toString()}
           change="Últimas 24h"
           changeType="neutral"
           icon={Eye}
@@ -48,7 +69,7 @@ export function DashboardView() {
         />
         <StatCard
           title="Taxa de Engajamento"
-          value="4.2%"
+          value="4.2%" // Need real calculation later, keeping hardcoded for now or removing if logic complex
           change="+0.8% esta semana"
           changeType="positive"
           icon={TrendingUp}
@@ -57,7 +78,7 @@ export function DashboardView() {
         />
         <StatCard
           title="Leads Gerados"
-          value="23"
+          value={leads.toString()}
           change="Este mês"
           changeType="neutral"
           icon={Users}
@@ -100,16 +121,15 @@ export function DashboardView() {
           <CardContent>
             <div className="space-y-4">
               {recentActivity.map((activity, index) => (
-                <div 
+                <div
                   key={activity.id}
                   className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors"
                   style={{ animationDelay: `${600 + index * 50}ms` }}
                 >
-                  <div className={`w-2 h-2 rounded-full mt-2 ${
-                    activity.status === "success" ? "bg-success" :
+                  <div className={`w-2 h-2 rounded-full mt-2 ${activity.status === "success" ? "bg-success" :
                     activity.status === "warning" ? "bg-warning" :
-                    "bg-accent"
-                  }`} />
+                      "bg-accent"
+                    }`} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm truncate">{activity.text}</p>
                     <p className="text-xs text-muted-foreground mt-1">{activity.time}</p>

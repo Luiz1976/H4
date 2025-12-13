@@ -1,16 +1,18 @@
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Radio, 
-  Hash, 
-  Search, 
-  Clock, 
-  MessageSquare, 
+import {
+  Radio,
+  Hash,
+  Search,
+  Clock,
+  MessageSquare,
   Play,
   Pause,
   Plus,
@@ -19,52 +21,96 @@ import {
 } from "lucide-react";
 
 export function ListenerView() {
+  const { toast } = useToast();
   const [isActive, setIsActive] = useState(false);
+  const [isScanning, setIsScanning] = useState(false); // Fix: use simple loading state
+  const [isDeepScanning, setIsDeepScanning] = useState(false);
   const [hashtags, setHashtags] = useState([
-    "#NR01", "#novaNR01", "#riscospsicossociais", "#saudemental", 
+    "#NR01", "#novaNR01", "#riscospsicossociais", "#saudemental",
     "#SST", "#segurancadotrabalho", "#RH", "#climaorganizacional"
   ]);
-  const [keywords, setKeywords] = useState([
-    "nova nr01", "riscos psicossociais", "saúde mental trabalho"
-  ]);
   const [newHashtag, setNewHashtag] = useState("");
+  const [keywords, setKeywords] = useState([
+    "segurança do trabalho", "gestão de riscos", "saúde ocupacional", "consultoria rh"
+  ]);
   const [newKeyword, setNewKeyword] = useState("");
-
   const [config, setConfig] = useState({
-    delayMinutes: 30,
-    maxCommentsDay: 10,
+    delayMinutes: 15,
+    maxCommentsDay: 50,
     postsPerSearch: 20,
-    retroactiveDays: 14
+    retroactiveDays: 30
   });
+
+  const handleDeepScan = async () => {
+    setIsDeepScanning(true);
+    toast({
+      title: "Iniciando Scan Profundo",
+      description: "Buscando oportunidades nos últimos 60 dias...",
+    });
+
+    try {
+      // Get the first account for now, or handle selection
+      const { data: accounts } = await supabase.from('linkedin_accounts').select('id').limit(1).single();
+
+      if (!accounts) {
+        throw new Error("Nenhuma conta LinkedIn conectada.");
+      }
+
+      const { data, error } = await supabase.functions.invoke('linkedin-listen', {
+        body: {
+          account_id: accounts.id,
+          scan_type: 'deep'
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Scan Concluído",
+        description: `${data?.detected || 0} oportunidades encontradas nos últimos 60 dias via busca web.`,
+        variant: "default", // success
+      });
+
+    } catch (error) {
+      console.error("Deep scan error:", error);
+      toast({
+        title: "Erro no Scan",
+        description: error instanceof Error ? error.message : "Falha ao executar scan profundo",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeepScanning(false);
+    }
+  };
 
   const addHashtag = () => {
     if (newHashtag && !hashtags.includes(newHashtag)) {
-      setHashtags([...hashtags, newHashtag.startsWith("#") ? newHashtag : `#${newHashtag}`]);
+      setHashtags([...hashtags, newHashtag]);
       setNewHashtag("");
     }
   };
 
   const removeHashtag = (tag: string) => {
-    setHashtags(hashtags.filter(h => h !== tag));
+    setHashtags(hashtags.filter(t => t !== tag));
   };
 
   const addKeyword = () => {
     if (newKeyword && !keywords.includes(newKeyword)) {
-      setKeywords([...keywords, newKeyword.toLowerCase()]);
+      setKeywords([...keywords, newKeyword]);
       setNewKeyword("");
     }
   };
 
-  const removeKeyword = (kw: string) => {
-    setKeywords(keywords.filter(k => k !== kw));
+  const removeKeyword = (word: string) => {
+    setKeywords(keywords.filter(k => k !== word));
   };
 
   return (
     <div className="space-y-8">
       {/* Header */}
       <div className="animate-fade-in">
-        <h1 className="text-3xl font-bold">Escuta Ativa Instagram</h1>
-        <p className="text-muted-foreground mt-1">Monitore hashtags e palavras-chave automaticamente</p>
+        <h1 className="text-3xl font-bold">Escuta Ativa LinkedIn (Real)</h1>
+        <p className="text-muted-foreground mt-1">Monitore hashtags e palavras-chave e encontre leads</p>
       </div>
 
       {/* Main Control */}
@@ -72,41 +118,61 @@ export function ListenerView() {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-300 ${
-                isActive ? "gradient-instagram animate-pulse-slow" : "bg-secondary"
-              }`}>
+              <div className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-300 ${isActive ? "gradient-instagram animate-pulse-slow" : "bg-secondary"
+                }`}>
                 <Radio className={`w-7 h-7 ${isActive ? "text-primary-foreground" : "text-muted-foreground"}`} />
               </div>
               <div>
                 <h2 className="text-xl font-semibold">
-                  {isActive ? "Escuta Ativa Ligada" : "Escuta Ativa Desligada"}
+                  {isActive ? "Escuta Automática Ligada" : "Escuta Automática Pausada"}
                 </h2>
                 <p className="text-muted-foreground">
-                  {isActive 
-                    ? "Monitorando posts em tempo real" 
-                    : "Clique para iniciar o monitoramento"
+                  {isActive
+                    ? "Monitorando posts e comentando (via Cron)"
+                    : "Automação de hora em hora pausada"
                   }
                 </p>
               </div>
             </div>
-            <Button
-              variant={isActive ? "destructive" : "default"}
-              size="lg"
-              onClick={() => setIsActive(!isActive)}
-              className="gap-2"
-            >
-              {isActive ? (
-                <>
-                  <Pause className="w-5 h-5" />
-                  Pausar
-                </>
-              ) : (
-                <>
-                  <Play className="w-5 h-5" />
-                  Iniciar
-                </>
-              )}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleDeepScan}
+                disabled={isDeepScanning}
+                className="gap-2 border-primary/50 hover:bg-primary/10"
+              >
+                {isDeepScanning ? (
+                  <>
+                    <Zap className="w-5 h-5 animate-spin" />
+                    Escaneando...
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-5 h-5" />
+                    Scan Profundo (2 Meses)
+                  </>
+                )}
+              </Button>
+              <Button
+                variant={isActive ? "destructive" : "default"}
+                size="lg"
+                onClick={() => setIsActive(!isActive)}
+                className="gap-2"
+              >
+                {isActive ? (
+                  <>
+                    <Pause className="w-5 h-5" />
+                    Pausar Automação
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-5 h-5" />
+                    Ativar Automação
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -140,14 +206,14 @@ export function ListenerView() {
             </div>
             <div className="flex flex-wrap gap-2">
               {hashtags.map((tag) => (
-                <Badge 
-                  key={tag} 
+                <Badge
+                  key={tag}
                   variant="secondary"
                   className="px-3 py-1.5 text-sm hover:bg-secondary/80 cursor-pointer group"
                 >
                   {tag}
-                  <X 
-                    className="w-3 h-3 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" 
+                  <X
+                    className="w-3 h-3 ml-2 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={() => removeHashtag(tag)}
                   />
                 </Badge>
@@ -184,14 +250,14 @@ export function ListenerView() {
             </div>
             <div className="flex flex-wrap gap-2">
               {keywords.map((kw) => (
-                <Badge 
-                  key={kw} 
+                <Badge
+                  key={kw}
                   variant="outline"
                   className="px-3 py-1.5 text-sm hover:bg-secondary cursor-pointer group border-accent/30"
                 >
                   {kw}
-                  <X 
-                    className="w-3 h-3 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" 
+                  <X
+                    className="w-3 h-3 ml-2 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={() => removeKeyword(kw)}
                   />
                 </Badge>
@@ -224,8 +290,8 @@ export function ListenerView() {
               <div className="flex items-center gap-2">
                 <Input
                   type="number"
-                  value={config.delayMinutes}
-                  onChange={(e) => setConfig({...config, delayMinutes: parseInt(e.target.value)})}
+                  value={config.delayMinutes || ""}
+                  onChange={(e) => setConfig({ ...config, delayMinutes: parseInt(e.target.value) || 0 })}
                   className="bg-secondary border-border"
                 />
                 <span className="text-sm text-muted-foreground">min</span>
@@ -238,8 +304,8 @@ export function ListenerView() {
               </Label>
               <Input
                 type="number"
-                value={config.maxCommentsDay}
-                onChange={(e) => setConfig({...config, maxCommentsDay: parseInt(e.target.value)})}
+                value={config.maxCommentsDay || ""}
+                onChange={(e) => setConfig({ ...config, maxCommentsDay: parseInt(e.target.value) || 0 })}
                 className="bg-secondary border-border"
               />
             </div>
@@ -250,8 +316,8 @@ export function ListenerView() {
               </Label>
               <Input
                 type="number"
-                value={config.postsPerSearch}
-                onChange={(e) => setConfig({...config, postsPerSearch: parseInt(e.target.value)})}
+                value={config.postsPerSearch || ""}
+                onChange={(e) => setConfig({ ...config, postsPerSearch: parseInt(e.target.value) || 0 })}
                 className="bg-secondary border-border"
               />
             </div>
@@ -264,7 +330,7 @@ export function ListenerView() {
                 <Input
                   type="number"
                   value={config.retroactiveDays}
-                  onChange={(e) => setConfig({...config, retroactiveDays: parseInt(e.target.value)})}
+                  onChange={(e) => setConfig({ ...config, retroactiveDays: parseInt(e.target.value) })}
                   className="bg-secondary border-border"
                 />
                 <span className="text-sm text-muted-foreground">dias</span>

@@ -256,11 +256,8 @@ export function useLinkedIn() {
 
     try {
       const redirectUri = `${window.location.origin}/linkedin-callback`;
-      
-      const response = await supabase.functions.invoke("linkedin-oauth", {
-        body: {},
-        headers: {},
-      });
+
+
 
       // Get auth URL
       const authResponse = await fetch(
@@ -273,11 +270,11 @@ export function useLinkedIn() {
       }
 
       const { url, state } = await authResponse.json();
-      
+
       // Store state for verification
       localStorage.setItem("linkedin_oauth_state", state);
       localStorage.setItem("linkedin_oauth_user", user.id);
-      
+
       // Redirect to LinkedIn
       window.location.href = url;
     } catch (error) {
@@ -304,7 +301,23 @@ export function useLinkedIn() {
         body: { account_id: account.id, count },
       });
 
-      if (response.error) throw response.error;
+      // Log full response for debugging
+      console.log("Generate content response:", response);
+
+      if (response.error) {
+        const errorMessage = typeof response.error === "object"
+          ? JSON.stringify(response.error, null, 2)
+          : String(response.error);
+        throw new Error(`Supabase client error: ${errorMessage}`);
+      }
+
+      // Check logical success for 200 OK errors
+      if (response.data && !response.data.success && response.data.error) {
+        const errorMessage = typeof response.data.error === "object"
+          ? JSON.stringify(response.data.error, null, 2)
+          : String(response.data.error);
+        throw new Error(errorMessage);
+      }
 
       toast({
         title: "Sucesso",
@@ -317,7 +330,7 @@ export function useLinkedIn() {
       console.error("Generate posts error:", error);
       toast({
         title: "Erro",
-        description: "Falha ao gerar conteúdo",
+        description: error instanceof Error ? error.message : "Falha ao gerar conteúdo",
         variant: "destructive",
       });
     }
@@ -339,10 +352,21 @@ export function useLinkedIn() {
 
       if (response.error) throw response.error;
 
-      toast({
-        title: "Publicado",
-        description: "Post publicado com sucesso no LinkedIn",
-      });
+      // Check if image upload failed
+      if (response.data?.warning && response.data?.imageError) {
+        console.warn("⚠️ Post published but image upload failed:");
+        console.error("Image Error Details:", response.data.imageError);
+        toast({
+          title: "Publicado (sem imagem)",
+          description: `Post publicado, mas imagem falhou. Veja console (F12)`,
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Publicado",
+          description: "Post publicado com sucesso no LinkedIn",
+        });
+      }
 
       await fetchPosts(account.id);
       return response.data;

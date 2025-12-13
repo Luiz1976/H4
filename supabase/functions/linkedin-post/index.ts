@@ -39,7 +39,7 @@ serve(async (req) => {
         .eq("id", post_id)
         .eq("status", "ready")
         .single();
-      
+
       if (error || !data) {
         throw new Error("Post not found or already published");
       }
@@ -66,6 +66,88 @@ serve(async (req) => {
     // Get author URN
     const authorUrn = `urn:li:person:${account.linkedin_user_id}`;
 
+    // TODO: Re-enable image upload after debugging OAuth permissions
+    let shareMediaCategory = "NONE";
+    let media = undefined;
+    let imageErrorLog = null; // Para capturar erro de upload de imagem
+
+    /* Image upload code - Re-enabled with Fallback */
+    try {
+      const promoImages = [
+        "https://raw.githubusercontent.com/Luiz1976/humaniq-assets/main/ARTE%2001-1.png",
+        "https://raw.githubusercontent.com/Luiz1976/humaniq-assets/main/ARTE%2002-1.png"
+      ];
+      const imageUrl = promoImages[(post.image_index || 1) - 1];
+      console.log(`Uploading image: ${imageUrl}`);
+
+      const imageResponse = await fetch(imageUrl);
+      if (!imageResponse.ok) {
+        throw new Error(`Failed to download image: ${imageResponse.statusText}`);
+      }
+      const imageBlob = await imageResponse.arrayBuffer();
+
+      const registerResponse = await fetch("https://api.linkedin.com/v2/assets?action=registerUpload", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${account.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          registerUploadRequest: {
+            recipes: ["urn:li:digitalmediaRecipe:feedshare-image"],
+            owner: authorUrn,
+            serviceRelationships: [
+              {
+                relationshipType: "OWNER",
+                identifier: "urn:li:userGeneratedContent"
+              }
+            ]
+          }
+        }),
+      });
+
+      if (!registerResponse.ok) {
+        const error = await registerResponse.text();
+        console.error("LinkedIn register upload error:", error);
+        throw new Error(`Failed to register image upload: ${error}`);
+      }
+
+      const registerData = await registerResponse.json();
+      const uploadUrl = registerData.value.uploadMechanism["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"].uploadUrl;
+      const asset = registerData.value.asset;
+
+      console.log(`Uploading to LinkedIn asset: ${asset}`);
+
+      const uploadResponse = await fetch(uploadUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${account.access_token}`,
+          "Content-Type": "application/octet-stream",
+        },
+        body: imageBlob,
+      });
+
+      if (!uploadResponse.ok) {
+        const error = await uploadResponse.text();
+        console.error("LinkedIn image upload error:", error);
+        throw new Error(`Failed to upload image: ${error}`);
+      }
+
+      console.log("Image uploaded successfully, using media...");
+      shareMediaCategory = "IMAGE";
+      media = [
+        {
+          status: "READY",
+          media: asset,
+        }
+      ];
+
+    } catch (imageError) {
+      console.error("Image upload failed, falling back to text-only:", imageError);
+      imageErrorLog = imageError instanceof Error ? imageError.message : String(imageError);
+      // Fallback enabled implicitly as variables remain defaults
+    }
+
     // Publish to LinkedIn
     const publishResponse = await fetch("https://api.linkedin.com/v2/ugcPosts", {
       method: "POST",
@@ -82,7 +164,8 @@ serve(async (req) => {
             shareCommentary: {
               text: post.content,
             },
-            shareMediaCategory: "NONE",
+            shareMediaCategory: shareMediaCategory,
+            media: media,
           },
         },
         visibility: {
@@ -94,7 +177,7 @@ serve(async (req) => {
     if (!publishResponse.ok) {
       const error = await publishResponse.text();
       console.error("LinkedIn publish error:", error);
-      
+
       // Mark post as failed
       await supabase
         .from("linkedin_posts")
@@ -167,7 +250,7 @@ serve(async (req) => {
     if (readyCount < minPosts) {
       const toGenerate = minPosts - readyCount;
       console.log(`Generating ${toGenerate} new posts to maintain minimum`);
-      
+
       // Call generate function
       const generateResponse = await fetch(`${SUPABASE_URL}/functions/v1/linkedin-generate-content`, {
         method: "POST",
@@ -184,19 +267,27 @@ serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ 
+    /* Modificação para Debug: Retornar erro de imagem se houver */
+    const responseData = {
       success: true,
       linkedin_post_id: linkedinPostId,
       post_id: post.id,
       ready_count: readyCount + generated - 1,
       generated,
-    }), {
+    };
+
+    if (imageErrorLog) {
+      responseData.warning = "Image upload failed";
+      responseData.imageError = imageErrorLog; // Retorna o erro exato para o frontend!
+    }
+
+    return new Response(JSON.stringify(responseData), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("Post publishing error:", error);
-    return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : "Unknown error" 
+    return new Response(JSON.stringify({
+      error: error instanceof Error ? error.message : "Unknown error"
     }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

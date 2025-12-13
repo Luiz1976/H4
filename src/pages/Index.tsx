@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useSearchParams } from "react-router-dom";
+
 import { Sidebar } from "@/components/layout/Sidebar";
 import { DashboardView } from "@/components/dashboard/DashboardView";
 import { LinkedInView } from "@/components/linkedin/LinkedInView";
@@ -12,9 +12,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
-  Activity, 
-  Search, 
+import {
+  Activity,
+  Search,
   Download,
   Trash2,
   CheckCircle2,
@@ -24,24 +24,19 @@ import {
   Loader2
 } from "lucide-react";
 
-const mockLogs = [
-  { id: 1, type: "success", message: "Comentário postado com sucesso em @empresa_rh", timestamp: "2024-01-15 14:32:15", details: "Post ID: 3245678901" },
-  { id: 2, type: "info", message: "Iniciando scan de hashtag #NR01", timestamp: "2024-01-15 14:30:00", details: "Limite: 20 posts" },
-  { id: 3, type: "success", message: "15 posts encontrados para #NR01", timestamp: "2024-01-15 14:30:05", details: "3 posts elegíveis para comentário" },
-  { id: 4, type: "info", message: "Scan de hashtag #riscospsicossociais", timestamp: "2024-01-15 14:25:00", details: "Limite: 20 posts" },
-  { id: 5, type: "success", message: "8 posts encontrados", timestamp: "2024-01-15 14:25:03", details: "2 posts elegíveis para comentário" },
-  { id: 6, type: "warning", message: "Rate limit próximo - reduzindo frequência", timestamp: "2024-01-15 14:20:00", details: "8/10 comentários hoje" },
-  { id: 7, type: "success", message: "Comentário postado em @saude_trabalho", timestamp: "2024-01-15 14:15:22", details: "Post ID: 3245678902" },
-  { id: 8, type: "error", message: "Falha ao comentar - post deletado", timestamp: "2024-01-15 13:30:00", details: "Post ID: 3245678904" },
-];
+
+
+import { useLinkedIn } from "@/hooks/useLinkedIn";
+import { format } from "date-fns";
 
 function LogsView() {
+  const { logs, loading } = useLinkedIn();
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<string | null>(null);
 
-  const filteredLogs = mockLogs.filter(log => {
+  const filteredLogs = logs.filter(log => {
     const matchesSearch = log.message.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = !filter || log.type === filter;
+    const matchesFilter = !filter || log.log_type === filter;
     return matchesSearch && matchesFilter;
   });
 
@@ -65,10 +60,10 @@ function LogsView() {
   };
 
   const stats = {
-    total: mockLogs.length,
-    success: mockLogs.filter(l => l.type === "success").length,
-    errors: mockLogs.filter(l => l.type === "error").length,
-    warnings: mockLogs.filter(l => l.type === "warning").length
+    total: logs.length,
+    success: logs.filter(l => l.log_type === "success").length,
+    errors: logs.filter(l => l.log_type === "error").length,
+    warnings: logs.filter(l => l.log_type === "warning").length
   };
 
   return (
@@ -87,6 +82,7 @@ function LogsView() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* ... (Keep existing stats cards, logic is compatible with updated stats object) ... */}
         <Card className="glass-card">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -160,20 +156,44 @@ function LogsView() {
                   className="flex items-start gap-4 p-4 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors"
                 >
                   <div className="mt-0.5">
-                    {getLogIcon(log.type)}
+                    {getLogIcon(log.log_type)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <Badge className={getLogBadge(log.type)}>
-                        {log.type}
+                      <Badge className={getLogBadge(log.log_type)}>
+                        {log.log_type}
                       </Badge>
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        {log.timestamp}
+                        {new Date(log.created_at).toLocaleString()}
                       </span>
                     </div>
                     <p className="text-sm font-medium">{log.message}</p>
-                    <p className="text-xs text-muted-foreground mt-1 font-mono">{log.details}</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      <p className="text-xs text-muted-foreground font-mono">
+                        {typeof log.details === 'string' ? log.details : JSON.stringify(log.details)}
+                      </p>
+                      {(log.details as any)?.linkedin_post_id && (
+                        <a
+                          href={`https://www.linkedin.com/feed/update/${(log.details as any).linkedin_post_id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary hover:underline flex items-center gap-1"
+                        >
+                          Ver Post <Search className="w-3 h-3" />
+                        </a>
+                      )}
+                      {(log.details as any)?.post_url && (
+                        <a
+                          href={(log.details as any).post_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary hover:underline flex items-center gap-1"
+                        >
+                          Ver Post <Search className="w-3 h-3" />
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -185,34 +205,57 @@ function LogsView() {
   );
 }
 
+import { supabase } from "@/integrations/supabase/client";
+
 const Index = () => {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "dashboard");
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        navigate("/auth");
-      } else {
-        setUser(session.user);
+    const autoLogin = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
         setLoading(false);
+        return;
       }
-    });
+
+      // Auto-login with demo account
+      const email = "demo@humaniq.com";
+      const password = "demo123456";
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        // If login fails, try to create the account
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              name: "Demo User",
+            },
+          },
+        });
+
+        if (signUpError) {
+          console.error("Auto-login failed:", signUpError);
+        }
+      }
+      setLoading(false);
+    };
+
+    autoLogin();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) {
-        navigate("/auth");
-      } else {
-        setUser(session.user);
-        setLoading(false);
-      }
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, []);
 
   const renderView = () => {
     switch (activeTab) {

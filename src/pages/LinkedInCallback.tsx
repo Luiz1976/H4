@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,11 +11,18 @@ export default function LinkedInCallback() {
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [message, setMessage] = useState("Conectando sua conta LinkedIn...");
 
+  const hasRun = useRef(false);
+
   useEffect(() => {
     const handleCallback = async () => {
+      if (hasRun.current) return;
+      hasRun.current = true;
+
       const code = searchParams.get("code");
       const state = searchParams.get("state");
       const error = searchParams.get("error");
+
+      console.log("Debug Callback Init:", { code, state, error });
 
       if (error) {
         setStatus("error");
@@ -33,15 +40,17 @@ export default function LinkedInCallback() {
       const savedState = localStorage.getItem("linkedin_oauth_state");
       const userId = localStorage.getItem("linkedin_oauth_user");
 
+      console.log("Debug Callback Storage:", { savedState, userId });
+
       if (state !== savedState) {
         setStatus("error");
-        setMessage("Estado de segurança inválido. Tente novamente.");
+        setMessage(`Erro de Estado (State Mismatch): Recebido '${state}' vs Salvo '${savedState}'. Tente conectar novamente.`);
         return;
       }
 
       if (!userId) {
         setStatus("error");
-        setMessage("Sessão expirada. Faça login novamente.");
+        setMessage("User ID não encontrado no localStorage. O login pode ter sido perdido.");
         return;
       }
 
@@ -69,7 +78,7 @@ export default function LinkedInCallback() {
           throw new Error(data.error || "Falha ao conectar");
         }
 
-        // Clean up
+        // Clean up only after success
         localStorage.removeItem("linkedin_oauth_state");
         localStorage.removeItem("linkedin_oauth_user");
 
