@@ -1,11 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
-
 @layer base {
   :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 326 78% 60%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 174 72% 50%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 326 78% 60%;
+
+    --radius: 0.75rem;
+
+    /* Custom colors - Light Mode */
+    --success: 142 71% 45%;
+    --warning: 38 92% 50%;
+    --instagram-gradient-start: 326 78% 60%;
+    --instagram-gradient-mid: 280 84% 55%;
+    --instagram-gradient-end: 25 95% 53%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
     --background: 222 47% 6%;
     --foreground: 210 40% 98%;
 
@@ -34,9 +82,7 @@
     --input: 222 47% 14%;
     --ring: 326 78% 60%;
 
-    --radius: 0.75rem;
-
-    /* Custom colors */
+    /* Custom colors - Dark Mode (Same as original) */
     --success: 142 71% 45%;
     --warning: 38 92% 50%;
     --instagram-gradient-start: 326 78% 60%;
@@ -64,28 +110,25 @@
     font-family: 'Inter', sans-serif;
   }
 
-  code, pre {
+  code,
+  pre {
     font-family: 'JetBrains Mono', monospace;
   }
 }
 
 @layer utilities {
   .gradient-instagram {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--instagram-gradient-start)) 0%,
-      hsl(var(--instagram-gradient-mid)) 50%,
-      hsl(var(--instagram-gradient-end)) 100%
-    );
+    background: linear-gradient(135deg,
+        hsl(var(--instagram-gradient-start)) 0%,
+        hsl(var(--instagram-gradient-mid)) 50%,
+        hsl(var(--instagram-gradient-end)) 100%);
   }
 
   .gradient-instagram-text {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--instagram-gradient-start)) 0%,
-      hsl(var(--instagram-gradient-mid)) 50%,
-      hsl(var(--instagram-gradient-end)) 100%
-    );
+    background: linear-gradient(135deg,
+        hsl(var(--instagram-gradient-start)) 0%,
+        hsl(var(--instagram-gradient-mid)) 50%,
+        hsl(var(--instagram-gradient-end)) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -114,9 +157,12 @@
   }
 
   @keyframes float {
-    0%, 100% {
+
+    0%,
+    100% {
       transform: translateY(0px);
     }
+
     50% {
       transform: translateY(-10px);
     }

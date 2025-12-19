@@ -13,7 +13,13 @@ serve(async (req) => {
   }
 
   try {
-    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    // Load multiple API keys for rotation
+    const GEMINI_API_KEYS: string[] = [];
+    for (let i = 1; i <= 10; i++) {
+      const key = Deno.env.get(`GEMINI_API_KEY_${i}`) || (i === 1 ? Deno.env.get("GEMINI_API_KEY") : null);
+      if (key) GEMINI_API_KEYS.push(key);
+    }
+
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? Deno.env.get("CUSTOM_SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("CUSTOM_SERVICE_ROLE_KEY");
 
@@ -126,20 +132,72 @@ serve(async (req) => {
     detected = detected.filter((v, i, a) => a.findIndex(v2 => (v2.source_url === v.source_url)) === i);
 
     const savedDetections = [];
+    let currentKeyIndex = 0;
 
     // Promo Images
     const promoImages = [
-      "https://raw.githubusercontent.com/alicebella/humaniq-assets/main/arte-01.png",
-      "https://raw.githubusercontent.com/alicebella/humaniq-assets/main/arte-02.png"
+      "https://raw.githubusercontent.com/Luiz1976/humaniq-assets/main/ARTE%2001-1.png",
+      "https://raw.githubusercontent.com/Luiz1976/humaniq-assets/main/ARTE%2002-1.png",
+      "https://raw.githubusercontent.com/Luiz1976/humaniq-assets/main/ARTE%2003-1.png"
     ];
+
+    // Helper function to call Gemini with retry logic
+    async function callGeminiWithRetry(prompt: string): Promise<any | null> {
+      if (GEMINI_API_KEYS.length === 0) return null;
+
+      let lastError: Error | null = null;
+
+      for (let attempt = 0; attempt < GEMINI_API_KEYS.length; attempt++) {
+        const apiKey = GEMINI_API_KEYS[currentKeyIndex];
+        const keyLabel = GEMINI_API_KEYS.length > 1 ? `Key ${currentKeyIndex + 1}/${GEMINI_API_KEYS.length}` : "Key";
+
+        try {
+          const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey.trim()}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }]
+              }),
+            }
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (rawContent) {
+              const cleanJson = rawContent.replace(/```json\n?|\n?```/g, "").trim();
+              return JSON.parse(cleanJson);
+            }
+          }
+
+          // Check if it's a quota error (429)
+          if (response.status === 429) {
+            console.warn(`⚠️ Quota exceeded for ${keyLabel}, trying next key...`);
+            currentKeyIndex = (currentKeyIndex + 1) % GEMINI_API_KEYS.length;
+            lastError = new Error("Quota exceeded");
+            continue;
+          }
+
+        } catch (error) {
+          console.error(`AI analysis error with ${keyLabel}:`, error);
+          lastError = error as Error;
+        }
+      }
+
+      console.warn("⚠️ All Gemini API keys failed, using fallback analysis");
+      return null;
+    }
 
     for (const discussion of detected) {
       // Add delay to respect rate limits (4 seconds)
       if (detected.indexOf(discussion) > 0) await new Promise(r => setTimeout(r, 4000));
       let analysis;
 
-      // Calculate relevance score using AI (Gemini)
-      if (GEMINI_API_KEY) {
+      // Calculate relevance score using AI (Gemini) with retry logic
+      if (GEMINI_API_KEYS.length > 0) {
         const scorePrompt = `Analise o seguinte post do LinkedIn e determine:
             1. Relevância para riscos psicossociais e NR01 (0-1)
             2. Se é uma oportunidade de interação comercial
@@ -155,32 +213,10 @@ serve(async (req) => {
             "suggested_response": "texto de resposta contextualizada mencionando HumaniQ AI"
             }`;
 
-        try {
-          // Updated to use gemini-flash-latest for stable free tier
-          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY.trim()}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              contents: [{
-                parts: [{ text: scorePrompt }]
-              }]
-            }),
-          });
+        analysis = await callGeminiWithRetry(scorePrompt);
 
-          if (response.ok) {
-            const data = await response.json();
-            const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-            if (rawContent) {
-              const cleanJson = rawContent.replace(/```json\n?|\n?```/g, "").trim();
-              analysis = JSON.parse(cleanJson);
-            }
-          }
-        } catch (e) {
-          console.error("AI analysis error:", e);
-        }
+        // Rotate to next key for next request
+        currentKeyIndex = (currentKeyIndex + 1) % GEMINI_API_KEYS.length;
       }
 
       // Attach Random Image Logic

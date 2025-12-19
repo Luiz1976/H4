@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { ModeToggle } from "@/components/mode-toggle";
 
 import { Sidebar } from "@/components/layout/Sidebar";
 import { DashboardView } from "@/components/dashboard/DashboardView";
@@ -288,7 +289,10 @@ const Index = () => {
     <div className="flex min-h-screen bg-background">
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
       <main className="flex-1 p-8 overflow-auto">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto relative">
+          <div className="absolute top-0 right-0 z-10">
+            <ModeToggle />
+          </div>
           {renderView()}
         </div>
       </main>

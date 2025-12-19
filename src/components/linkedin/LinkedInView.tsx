@@ -6,11 +6,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
-import { 
-  Linkedin, 
-  Plus, 
-  Send, 
-  RefreshCw, 
+import {
+  Linkedin,
+  Plus,
+  Send,
+  RefreshCw,
   Trash2,
   Eye,
   Clock,
@@ -31,8 +31,9 @@ import { LinkedInPostCard } from "./LinkedInPostCard";
 import { LinkedInDetectionCard } from "./LinkedInDetectionCard";
 import arte01 from "@/assets/linkedin/arte-01.png";
 import arte02 from "@/assets/linkedin/arte-02.png";
+import arte03 from "@/assets/linkedin/arte-03.png";
 
-const images = [arte01, arte02];
+const images = [arte01, arte02, arte03];
 
 export function LinkedInView() {
   const {
@@ -114,9 +115,9 @@ export function LinkedInView() {
             <p className="font-medium">{account?.name}</p>
             <p className="text-xs text-muted-foreground">Conectado</p>
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={disconnectAccount}
             className="text-muted-foreground hover:text-destructive"
           >

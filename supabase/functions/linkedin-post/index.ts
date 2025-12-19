@@ -75,7 +75,8 @@ serve(async (req) => {
     try {
       const promoImages = [
         "https://raw.githubusercontent.com/Luiz1976/humaniq-assets/main/ARTE%2001-1.png",
-        "https://raw.githubusercontent.com/Luiz1976/humaniq-assets/main/ARTE%2002-1.png"
+        "https://raw.githubusercontent.com/Luiz1976/humaniq-assets/main/ARTE%2002-1.png",
+        "https://raw.githubusercontent.com/Luiz1976/humaniq-assets/main/ARTE%2003-1.png"
       ];
       const imageUrl = promoImages[(post.image_index || 1) - 1];
       console.log(`Uploading image: ${imageUrl}`);

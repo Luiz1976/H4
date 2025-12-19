@@ -5,10 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Settings, 
-  Bell, 
-  Shield, 
+import {
+  Settings,
+  Bell,
+  Shield,
   Palette,
   Save,
   RotateCcw,
@@ -86,7 +86,7 @@ export function SettingsView() {
               </div>
               <Switch
                 checked={notifications.email}
-                onCheckedChange={(checked) => setNotifications({...notifications, email: checked})}
+                onCheckedChange={(checked) => setNotifications({ ...notifications, email: checked })}
               />
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
@@ -96,7 +96,7 @@ export function SettingsView() {
               </div>
               <Switch
                 checked={notifications.push}
-                onCheckedChange={(checked) => setNotifications({...notifications, push: checked})}
+                onCheckedChange={(checked) => setNotifications({ ...notifications, push: checked })}
               />
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
@@ -106,7 +106,7 @@ export function SettingsView() {
               </div>
               <Switch
                 checked={notifications.dailyReport}
-                onCheckedChange={(checked) => setNotifications({...notifications, dailyReport: checked})}
+                onCheckedChange={(checked) => setNotifications({ ...notifications, dailyReport: checked })}
               />
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
@@ -116,7 +116,7 @@ export function SettingsView() {
               </div>
               <Switch
                 checked={notifications.errorAlerts}
-                onCheckedChange={(checked) => setNotifications({...notifications, errorAlerts: checked})}
+                onCheckedChange={(checked) => setNotifications({ ...notifications, errorAlerts: checked })}
               />
             </div>
           </CardContent>
@@ -150,14 +150,14 @@ export function SettingsView() {
             </div>
             <div className="flex flex-wrap gap-2">
               {blacklist.map((account) => (
-                <Badge 
-                  key={account} 
+                <Badge
+                  key={account}
                   variant="secondary"
                   className="px-3 py-1.5 text-sm hover:bg-destructive/20 cursor-pointer group"
                 >
                   {account}
-                  <X 
-                    className="w-3 h-3 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" 
+                  <X
+                    className="w-3 h-3 ml-2 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={() => removeFromBlacklist(account)}
                   />
                 </Badge>
@@ -198,36 +198,36 @@ export function SettingsView() {
           </CardContent>
         </Card>
 
-        {/* Security */}
+        {/* Instagram Integration */}
         <Card className="glass-card animate-fade-in" style={{ animationDelay: "400ms" }}>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-success/20 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-success" />
+              <div className="w-10 h-10 rounded-xl bg-pink-500/20 flex items-center justify-center">
+                <Settings className="w-5 h-5 text-pink-500" />
               </div>
               <div>
-                <CardTitle>Segurança</CardTitle>
-                <CardDescription>Configurações de proteção</CardDescription>
+                <CardTitle>Integração Instagram</CardTitle>
+                <CardDescription>Conexão Oficial (Graph API)</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="p-4 rounded-lg bg-secondary/50 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Sessão Instagram</span>
-                <Badge className="bg-success/20 text-success">Ativa</Badge>
+                <span className="text-sm font-medium">Status da Conexão</span>
+                {/* Logic to show status would be implemented here, currently just static for UI update */}
+                <Badge className="bg-yellow-500/20 text-yellow-500">Pendente</Badge>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Última atualização</span>
-                <span className="text-sm text-muted-foreground">Há 2 horas</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Expira em</span>
-                <span className="text-sm text-muted-foreground">22 horas</span>
-              </div>
+              <p className="text-xs text-muted-foreground">
+                Conecte sua conta Instagram Business vinculada a uma página do Facebook para habilitar postagens automáticas.
+              </p>
             </div>
-            <Button variant="outline" className="w-full">
-              Renovar Sessão Manualmente
+            <Button
+              variant="default"
+              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              onClick={() => import("@/services/instagram").then(m => m.connectInstagram())}
+            >
+              Conectar com Facebook/Instagram
             </Button>
           </CardContent>
         </Card>

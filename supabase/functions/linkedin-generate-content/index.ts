@@ -43,13 +43,21 @@ serve(async (req) => {
   }
 
   try {
-    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    // Load multiple API keys for rotation
+    const GEMINI_API_KEYS: string[] = [];
+    for (let i = 1; i <= 10; i++) {
+      const key = Deno.env.get(`GEMINI_API_KEY_${i}`) || (i === 1 ? Deno.env.get("GEMINI_API_KEY") : null);
+      if (key) GEMINI_API_KEYS.push(key);
+    }
+
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? Deno.env.get("CUSTOM_SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("CUSTOM_SERVICE_ROLE_KEY");
 
-    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not configured in secrets");
+    if (GEMINI_API_KEYS.length === 0) throw new Error("No Gemini API keys configured. Set GEMINI_API_KEY or GEMINI_API_KEY_1, GEMINI_API_KEY_2, etc.");
     if (!SUPABASE_URL) throw new Error("SUPABASE_URL not configured");
     if (!SUPABASE_SERVICE_ROLE_KEY) throw new Error("SUPABASE_SERVICE_ROLE_KEY not configured");
+
+    console.log(`✅ Loaded ${GEMINI_API_KEYS.length} Gemini API key(s) for rotation`);
 
     const reqBody = await req.json().catch(err => {
       throw new Error(`Failed to parse request body JSON: ${err.message}`);
@@ -72,12 +80,65 @@ serve(async (req) => {
     const existingTitles = existingPosts?.map(p => p.title) || [];
 
     const generatedPosts = [];
+    let currentKeyIndex = 0;
+
+    // Helper function to call Gemini with retry logic
+    async function callGeminiWithRetry(prompt: string, maxRetries = GEMINI_API_KEYS.length): Promise<any> {
+      let lastError: Error | null = null;
+
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        const apiKey = GEMINI_API_KEYS[currentKeyIndex];
+        const keyLabel = GEMINI_API_KEYS.length > 1 ? `Key ${currentKeyIndex + 1}/${GEMINI_API_KEYS.length}` : "Key";
+
+        console.log(`🔑 Attempting with ${keyLabel} (Attempt ${attempt + 1}/${maxRetries})`);
+
+        try {
+          const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey.trim()}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }]
+              }),
+            }
+          );
+
+          if (response.ok) {
+            console.log(`✅ Success with ${keyLabel}`);
+            return await response.json();
+          }
+
+          const errorText = await response.text();
+
+          // Check if it's a quota error (429)
+          if (response.status === 429) {
+            console.warn(`⚠️ Quota exceeded for ${keyLabel}, trying next key...`);
+            currentKeyIndex = (currentKeyIndex + 1) % GEMINI_API_KEYS.length;
+            lastError = new Error(`Quota exceeded: ${errorText}`);
+            continue;
+          }
+
+          // For other errors, throw immediately
+          throw new Error(`Gemini API returned error ${response.status}: ${errorText}`);
+        } catch (error) {
+          if (error instanceof Error && error.message.includes("Quota exceeded")) {
+            lastError = error;
+            continue;
+          }
+          throw error;
+        }
+      }
+
+      // All keys failed
+      throw lastError || new Error("All API keys exhausted");
+    }
 
     for (let i = 0; i < count; i++) {
       const theme = CONTENT_THEMES[Math.floor(Math.random() * CONTENT_THEMES.length)];
-      const imageIndex = Math.floor(Math.random() * 2) + 1; // 1 or 2
+      const imageIndex = Math.floor(Math.random() * 3) + 1; // 1, 2, or 3
 
-      console.log(`Generating post ${i + 1}/${count} with theme: ${theme}`);
+      console.log(`\n📝 Generating post ${i + 1}/${count} - Theme: "${theme}"`);
 
       const prompt = `Você é um especialista em marketing de conteúdo B2B para LinkedIn, especializado em saúde ocupacional e conformidade com NR01.
         
@@ -100,25 +161,15 @@ serve(async (req) => {
           "content": "texto completo da postagem"
         }`;
 
-      // Add delay to respect rate limits (4 seconds)
+      // Add delay to respect rate limits (4 seconds between posts)
       if (i > 0) await new Promise(r => setTimeout(r, 4000));
 
-      // Call Google Gemini API (Using gemini-flash-latest which is the stable alias)
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY.trim()}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        }),
-      });
+      // Call Gemini with automatic retry/rotation
+      const data = await callGeminiWithRetry(prompt);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Gemini AI error:", errorText);
-        throw new Error(`Gemini API returned error ${response.status}: ${errorText}`);
-      }
+      // Rotate to next key for next request (round-robin)
+      currentKeyIndex = (currentKeyIndex + 1) % GEMINI_API_KEYS.length;
 
-      const data = await response.json();
       const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
       if (!rawContent) {
