@@ -51,6 +51,12 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Navbar variables */
+    --navbar-height: 4rem;
+    --navbar-background: 0 0% 100%;
+    --navbar-foreground: 240 10% 3.9%;
+    --navbar-border: 214.3 31.8% 91.4%;
   }
 
   .dark {
@@ -97,6 +103,12 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 222 47% 18%;
     --sidebar-ring: 326 78% 60%;
+
+    /* Navbar variables */
+    --navbar-height: 4rem;
+    --navbar-background: 240 10% 3.9%;
+    --navbar-foreground: 0 0% 98%;
+    --navbar-border: 217.2 32.6% 17.5%;
   }
 }
 

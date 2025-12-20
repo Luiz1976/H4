@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
-import { ModeToggle } from "@/components/mode-toggle";
+import { useSearchParams, useNavigate } from "react-router-dom";
 
-import { Sidebar } from "@/components/layout/Sidebar";
+import { Navbar } from "@/components/layout/Navbar";
 import { DashboardView } from "@/components/dashboard/DashboardView";
 import { LinkedInView } from "@/components/linkedin/LinkedInView";
 import { ListenerView } from "@/components/listener/ListenerView";
@@ -210,6 +209,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "dashboard");
   const [loading, setLoading] = useState(true);
 
@@ -262,6 +262,9 @@ const Index = () => {
     switch (activeTab) {
       case "dashboard":
         return <DashboardView />;
+      case "blog":
+        navigate("/website-content");
+        return null;
       case "linkedin":
         return <LinkedInView />;
       case "listener":
@@ -286,13 +289,10 @@ const Index = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-      <main className="flex-1 p-8 overflow-auto">
-        <div className="max-w-7xl mx-auto relative">
-          <div className="absolute top-0 right-0 z-10">
-            <ModeToggle />
-          </div>
+    <div className="min-h-screen bg-background">
+      <Navbar activeTab={activeTab} onTabChange={setActiveTab} />
+      <main className="p-4 sm:p-6 lg:p-8">
+        <div className="max-w-7xl mx-auto">
           {renderView()}
         </div>
       </main>
